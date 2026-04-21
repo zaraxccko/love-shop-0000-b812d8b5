@@ -5,6 +5,8 @@ import { formatTHB } from "@/lib/format";
 import { haptic } from "@/lib/telegram";
 import { useI18n, useT } from "@/lib/i18n";
 import { loc } from "@/lib/loc";
+import { useLocation } from "@/store/location";
+import { findCity } from "@/data/locations";
 
 interface CartSheetProps {
   open: boolean;
