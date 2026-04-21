@@ -6,7 +6,7 @@ import { haptic } from "@/lib/telegram";
 import { useI18n, useT } from "@/lib/i18n";
 import { loc } from "@/lib/loc";
 import { useLocation } from "@/store/location";
-import { findCity } from "@/data/locations";
+import { findDistrict } from "@/data/locations";
 
 interface CartSheetProps {
   open: boolean;
@@ -32,8 +32,7 @@ export const CartSheet = ({ open, onOpenChange, onCheckout }: CartSheetProps) =>
   const total = useCart((s) => s.totalTHB());
   const t = useT();
   const lang = useI18n((s) => s.lang) ?? "ru";
-  const citySlug = useLocation((s) => s.city);
-  const city = citySlug ? findCity(citySlug)?.city : null;
+  void useLocation((s) => s.city); // re-render on city change
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -84,7 +83,7 @@ export const CartSheet = ({ open, onOpenChange, onCheckout }: CartSheetProps) =>
                       </div>
                       {line.districtSlug && (
                         <div className="text-[11px] text-muted-foreground mt-0.5">
-                          📍 {city?.districts?.find((d) => d.slug === line.districtSlug)?.name[lang] ?? line.districtSlug}
+                          📍 {findDistrict(line.districtSlug)?.name[lang] ?? line.districtSlug}
                         </div>
                       )}
                       {isGift ? (
