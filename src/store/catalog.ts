@@ -25,10 +25,14 @@ export const useCatalog = create<CatalogState>()(
       upsertProduct: (p) =>
         set((s) => {
           const exists = s.products.some((x) => x.id === p.id);
+          // Only one product can be the "featured / pick of the day".
+          // If this one is featured, unset the flag on every other product.
+          const normalize = (list: Product[]) =>
+            p.featured ? list.map((x) => (x.id === p.id ? x : { ...x, featured: false })) : list;
           return {
-            products: exists
-              ? s.products.map((x) => (x.id === p.id ? p : x))
-              : [...s.products, p],
+            products: normalize(
+              exists ? s.products.map((x) => (x.id === p.id ? p : x)) : [...s.products, p]
+            ),
           };
         }),
       deleteProduct: (id) =>

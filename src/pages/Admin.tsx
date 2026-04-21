@@ -144,7 +144,10 @@ const AdminPage = ({ onExit }: AdminPageProps) => {
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-sm truncate">{loc(p.name, "ru") || "—"}</div>
+                  <div className="font-semibold text-sm truncate flex items-center gap-1">
+                    {p.featured && <span title="Pick of the day">⭐</span>}
+                    {loc(p.name, "ru") || "—"}
+                  </div>
                   <div className="text-[11px] text-muted-foreground truncate">
                     ${p.priceTHB} · {loc(categories.find((c) => c.slug === p.category)?.name, "ru") || p.category}
                   </div>
