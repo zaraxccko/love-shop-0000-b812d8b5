@@ -86,6 +86,18 @@ export const LocationPicker = ({ onPicked, showBack, onBack }: LocationPickerPro
           ))}
         </div>
       )}
+
+      {!country && (
+        <button
+          onClick={() => {
+            haptic("light");
+            setLang(null as unknown as never);
+          }}
+          className="mt-8 mx-auto text-xs text-muted-foreground underline-offset-4 hover:underline active:scale-95"
+        >
+          {lang === "ru" ? "← Сменить язык" : "← Change language"}
+        </button>
+      )}
     </div>
   );
 };
