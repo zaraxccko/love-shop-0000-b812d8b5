@@ -64,11 +64,11 @@ export const LocationPicker = ({ onPicked, showBack, onBack }: LocationPickerPro
             >
               <span className="text-4xl">{c.flag}</span>
               <span className="font-bold text-sm leading-tight">{c.name[lang]}</span>
-              <span className="text-[11px] text-muted-foreground">
-                {c.cities.length === 1
-                  ? c.cities[0].name[lang]
-                  : `${c.cities.length} ${lang === "ru" ? "городов" : "cities"}`}
-              </span>
+              {c.cities.length > 1 && (
+                <span className="text-[11px] text-muted-foreground">
+                  {`${c.cities.length} ${lang === "ru" ? "городов" : "cities"}`}
+                </span>
+              )}
             </button>
           ))}
         </div>
