@@ -54,7 +54,7 @@ export const DepositPage = ({ onBack, suggested }: DepositPageProps) => {
     haptic("success");
     markPaid(pending.id);
     toast.success(
-      tr("Заявка отправлена. Ждём подтверждения админа.", "Submitted. Waiting for admin confirmation.")
+      tr("Заявка отправлена. Ждём подтверждения.", "Submitted. Waiting for confirmation.")
     );
   };
 
@@ -211,8 +211,8 @@ export const DepositPage = ({ onBack, suggested }: DepositPageProps) => {
                   <Clock className="w-4 h-4 text-primary shrink-0 mt-0.5" />
                   <span>
                     {tr(
-                      "Заявка отправлена. Ожидает подтверждения админа — обычно 5–15 минут. Баланс пополнится автоматически.",
-                      "Submitted. Waiting for admin confirmation — usually 5–15 minutes. Balance will be topped up automatically."
+                      "Заявка отправлена. Ожидает подтверждения — обычно 5–15 минут. Баланс пополнится автоматически.",
+                      "Submitted. Waiting for confirmation — usually 5–15 minutes. Balance will be topped up automatically."
                     )}
                   </span>
                 </div>
