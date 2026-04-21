@@ -134,7 +134,7 @@ type Key = keyof typeof dict.ru;
 
 interface I18nState {
   lang: Lang | null;
-  setLang: (l: Lang) => void;
+  setLang: (l: Lang | null) => void;
 }
 
 export const useI18n = create<I18nState>()(
