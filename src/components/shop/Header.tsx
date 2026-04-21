@@ -6,7 +6,7 @@ import { haptic } from "@/lib/telegram";
 import { useI18n, useT, type Lang } from "@/lib/i18n";
 import { useLocation } from "@/store/location";
 import { findCity } from "@/data/locations";
-import logo from "@/assets/logo.png";
+import logo from "@/assets/logo.webp";
 
 interface HeaderProps {
   onCartClick: () => void;
