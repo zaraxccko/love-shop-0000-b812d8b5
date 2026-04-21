@@ -33,7 +33,11 @@ export const COUNTRIES: Country[] = [
         districts: [
           { slug: "phuket-patong", name: { ru: "Патонг", en: "Patong" } },
           { slug: "phuket-kata", name: { ru: "Ката", en: "Kata" } },
+          { slug: "phuket-karon", name: { ru: "Карон", en: "Karon" } },
           { slug: "phuket-rawai", name: { ru: "Раваи", en: "Rawai" } },
+          { slug: "phuket-chalong", name: { ru: "Чалонг", en: "Chalong" } },
+          { slug: "phuket-bangtao", name: { ru: "Банг Тао", en: "Bang Tao" } },
+          { slug: "phuket-surin", name: { ru: "Сурин", en: "Surin" } },
         ],
       },
       {
@@ -42,11 +46,36 @@ export const COUNTRIES: Country[] = [
         districts: [
           { slug: "bkk-sukhumvit", name: { ru: "Сукхумвит", en: "Sukhumvit" } },
           { slug: "bkk-silom", name: { ru: "Силом", en: "Silom" } },
+          { slug: "bkk-sathorn", name: { ru: "Сатхон", en: "Sathorn" } },
           { slug: "bkk-thonglor", name: { ru: "Тхонглор", en: "Thonglor" } },
+          { slug: "bkk-ekkamai", name: { ru: "Эккамай", en: "Ekkamai" } },
+          { slug: "bkk-ari", name: { ru: "Ари", en: "Ari" } },
+          { slug: "bkk-phromphong", name: { ru: "Пхром Понг", en: "Phrom Phong" } },
+          { slug: "bkk-asok", name: { ru: "Асок", en: "Asok" } },
         ],
       },
-      { slug: "pattaya", name: { ru: "Паттайя", en: "Pattaya" } },
-      { slug: "samui", name: { ru: "Самуи", en: "Samui" } },
+      {
+        slug: "pattaya",
+        name: { ru: "Паттайя", en: "Pattaya" },
+        districts: [
+          { slug: "pattaya-central", name: { ru: "Центр", en: "Central" } },
+          { slug: "pattaya-jomtien", name: { ru: "Джомтьен", en: "Jomtien" } },
+          { slug: "pattaya-naklua", name: { ru: "Наклуа", en: "Naklua" } },
+          { slug: "pattaya-pratamnak", name: { ru: "Пратамнак", en: "Pratamnak" } },
+          { slug: "pattaya-wongamat", name: { ru: "Вонг Амат", en: "Wong Amat" } },
+        ],
+      },
+      {
+        slug: "samui",
+        name: { ru: "Самуи", en: "Samui" },
+        districts: [
+          { slug: "samui-chaweng", name: { ru: "Чавенг", en: "Chaweng" } },
+          { slug: "samui-lamai", name: { ru: "Ламай", en: "Lamai" } },
+          { slug: "samui-bophut", name: { ru: "Бопхут", en: "Bophut" } },
+          { slug: "samui-maenam", name: { ru: "Маенам", en: "Maenam" } },
+          { slug: "samui-nathon", name: { ru: "Натон", en: "Nathon" } },
+        ],
+      },
     ],
   },
   {
@@ -55,22 +84,77 @@ export const COUNTRIES: Country[] = [
     name: { ru: "Вьетнам", en: "Vietnam" },
     shortName: { ru: "Вьет", en: "Viet" },
     cities: [
-      { slug: "hochiminh", name: { ru: "Хошимин", en: "Ho Chi Minh" } },
-      { slug: "danang", name: { ru: "Дананг", en: "Da Nang" } },
-      { slug: "nhatrang", name: { ru: "Нячанг", en: "Nha Trang" } },
+      {
+        slug: "hochiminh",
+        name: { ru: "Хошимин", en: "Ho Chi Minh" },
+        districts: [
+          { slug: "hcm-d1", name: { ru: "Центр (D1)", en: "District 1" } },
+          { slug: "hcm-thaodien", name: { ru: "Тхао Дьен", en: "Thao Dien" } },
+          { slug: "hcm-phumyhung", name: { ru: "Фу Ми Хынг", en: "Phu My Hung" } },
+          { slug: "hcm-binhthanh", name: { ru: "Бинь Тхань", en: "Binh Thanh" } },
+          { slug: "hcm-phunhuan", name: { ru: "Фу Нюан", en: "Phu Nhuan" } },
+        ],
+      },
+      {
+        slug: "danang",
+        name: { ru: "Дананг", en: "Da Nang" },
+        districts: [
+          { slug: "dn-mykhe", name: { ru: "Май Кхе", en: "My Khe" } },
+          { slug: "dn-sontra", name: { ru: "Сон Тра", en: "Son Tra" } },
+          { slug: "dn-haichau", name: { ru: "Хай Чау", en: "Hai Chau" } },
+          { slug: "dn-nguhanhson", name: { ru: "Нгу Хань Сон", en: "Ngu Hanh Son" } },
+        ],
+      },
+      {
+        slug: "nhatrang",
+        name: { ru: "Нячанг", en: "Nha Trang" },
+        districts: [
+          { slug: "nt-center", name: { ru: "Центр", en: "Center" } },
+          { slug: "nt-tranphu", name: { ru: "Чан Фу", en: "Tran Phu" } },
+          { slug: "nt-vinpearl", name: { ru: "Винперл", en: "Vinpearl" } },
+          { slug: "nt-north", name: { ru: "Северный пляж", en: "North Beach" } },
+        ],
+      },
     ],
   },
   {
     slug: "bali",
     flag: "🇮🇩",
     name: { ru: "Бали", en: "Bali" },
-    cities: [{ slug: "bali", name: { ru: "Бали", en: "Bali" } }],
+    cities: [
+      {
+        slug: "bali",
+        name: { ru: "Бали", en: "Bali" },
+        districts: [
+          { slug: "bali-canggu", name: { ru: "Чангу", en: "Canggu" } },
+          { slug: "bali-seminyak", name: { ru: "Семиньяк", en: "Seminyak" } },
+          { slug: "bali-kuta", name: { ru: "Кута", en: "Kuta" } },
+          { slug: "bali-ubud", name: { ru: "Убуд", en: "Ubud" } },
+          { slug: "bali-sanur", name: { ru: "Санур", en: "Sanur" } },
+          { slug: "bali-uluwatu", name: { ru: "Улувату", en: "Uluwatu" } },
+          { slug: "bali-denpasar", name: { ru: "Денпасар", en: "Denpasar" } },
+        ],
+      },
+    ],
   },
   {
     slug: "kl",
     flag: "🇲🇾",
     name: { ru: "Куала-Лумпур", en: "Kuala Lumpur" },
-    cities: [{ slug: "kl", name: { ru: "Куала-Лумпур", en: "Kuala Lumpur" } }],
+    cities: [
+      {
+        slug: "kl",
+        name: { ru: "Куала-Лумпур", en: "Kuala Lumpur" },
+        districts: [
+          { slug: "kl-bukitbintang", name: { ru: "Bukit Bintang", en: "Bukit Bintang" } },
+          { slug: "kl-klcc", name: { ru: "KLCC", en: "KLCC" } },
+          { slug: "kl-bangsar", name: { ru: "Bangsar", en: "Bangsar" } },
+          { slug: "kl-montkiara", name: { ru: "Mont Kiara", en: "Mont Kiara" } },
+          { slug: "kl-ttdi", name: { ru: "TTDI", en: "TTDI" } },
+          { slug: "kl-damansara", name: { ru: "Damansara", en: "Damansara" } },
+        ],
+      },
+    ],
   },
 ];
 
