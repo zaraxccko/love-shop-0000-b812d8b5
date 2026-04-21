@@ -1,6 +1,4 @@
 import { ShoppingBag, MapPin } from "lucide-react";
-import { useRef } from "react";
-import { useNavigate } from "react-router-dom";
 import { useCart } from "@/store/cart";
 import { haptic } from "@/lib/telegram";
 import { useI18n, useT, type Lang } from "@/lib/i18n";
@@ -13,9 +11,6 @@ interface HeaderProps {
   onLocationClick: () => void;
 }
 
-const TAPS_REQUIRED = 7;
-const TAP_WINDOW_MS = 3000;
-
 export const Header = ({ onCartClick, onLocationClick }: HeaderProps) => {
   const totalQty = useCart((s) => s.totalQty());
   const t = useT();
@@ -23,18 +18,6 @@ export const Header = ({ onCartClick, onLocationClick }: HeaderProps) => {
   const setLang = useI18n((s) => s.setLang);
   const city = useLocation((s) => s.city);
   const found = city ? findCity(city) : null;
-  const navigate = useNavigate();
-  const tapsRef = useRef<number[]>([]);
-
-  const handleLogoTap = () => {
-    const now = Date.now();
-    tapsRef.current = [...tapsRef.current.filter((t) => now - t < TAP_WINDOW_MS), now];
-    if (tapsRef.current.length >= TAPS_REQUIRED) {
-      tapsRef.current = [];
-      haptic("success");
-      navigate("/_lsadmin_x9k2");
-    }
-  };
 
   return (
     <header className="sticky top-0 z-30 px-5 pt-5 pb-3 bg-background/80 backdrop-blur-xl">
@@ -49,8 +32,7 @@ export const Header = ({ onCartClick, onLocationClick }: HeaderProps) => {
             decoding="async"
             // @ts-expect-error fetchpriority is a valid HTML attribute
             fetchpriority="high"
-            onClick={handleLogoTap}
-            className="w-11 h-11 rounded-2xl object-cover shadow-soft shrink-0 cursor-pointer select-none"
+            className="w-11 h-11 rounded-2xl object-cover shadow-soft shrink-0 select-none"
           />
           <div className="min-w-0">
             <div className="font-display font-bold text-lg leading-none truncate">Love Shop</div>
