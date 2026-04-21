@@ -49,7 +49,7 @@ export const LocationPicker = ({ onPicked, showBack, onBack }: LocationPickerPro
         {country ? (
           <span className="flex items-center gap-2">
             <span>{country.flag}</span>
-            <span>{country.shortName?.[lang] ?? country.name[lang]}</span>
+            <span>{country.name[lang]}</span>
           </span>
         ) : (
           t("loc.title")
