@@ -251,7 +251,7 @@ export const ProductSheet = ({ product, onOpenChange }: ProductSheetProps) => {
                         <button
                           onClick={(e) => {
                             haptic("medium");
-                            flyToCart(e.currentTarget, product.emoji);
+                            flyToCart(e.currentTarget, product.imageUrl, product.emoji);
                             add(product, {
                               variantId: v.id,
                               districtSlug: districtSlug ?? undefined,
