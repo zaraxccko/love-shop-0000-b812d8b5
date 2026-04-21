@@ -270,17 +270,39 @@ const AdminPage = () => {
               </div>
 
               <div>
-                <Label>{t("admin.name")}</Label>
+                <Label>{t("admin.name")} (RU)</Label>
                 <Input
-                  value={editingP.name}
-                  onChange={(e) => setEditingP({ ...editingP, name: e.target.value })}
+                  value={getLang(editingP.name, "ru")}
+                  onChange={(e) =>
+                    setEditingP({ ...editingP, name: setLang(editingP.name, "ru", e.target.value) })
+                  }
                 />
               </div>
               <div>
-                <Label>{t("admin.description")}</Label>
+                <Label>{t("admin.name")} (EN)</Label>
+                <Input
+                  value={getLang(editingP.name, "en")}
+                  onChange={(e) =>
+                    setEditingP({ ...editingP, name: setLang(editingP.name, "en", e.target.value) })
+                  }
+                />
+              </div>
+              <div>
+                <Label>{t("admin.description")} (RU)</Label>
                 <Textarea
-                  value={editingP.description}
-                  onChange={(e) => setEditingP({ ...editingP, description: e.target.value })}
+                  value={getLang(editingP.description, "ru")}
+                  onChange={(e) =>
+                    setEditingP({ ...editingP, description: setLang(editingP.description, "ru", e.target.value) })
+                  }
+                />
+              </div>
+              <div>
+                <Label>{t("admin.description")} (EN)</Label>
+                <Textarea
+                  value={getLang(editingP.description, "en")}
+                  onChange={(e) =>
+                    setEditingP({ ...editingP, description: setLang(editingP.description, "en", e.target.value) })
+                  }
                 />
               </div>
 
@@ -338,14 +360,29 @@ const AdminPage = () => {
                     onChange={(e) => setEditingP({ ...editingP, weight: e.target.value })}
                   />
                 </div>
-                <div>
-                  <Label>{t("admin.badge")}</Label>
-                  <Input
-                    value={editingP.badge ?? ""}
-                    onChange={(e) =>
-                      setEditingP({ ...editingP, badge: e.target.value || undefined })
-                    }
-                  />
+                <div className="col-span-2 grid grid-cols-2 gap-2">
+                  <div>
+                    <Label>{t("admin.badge")} (RU)</Label>
+                    <Input
+                      value={getLang(editingP.badge, "ru")}
+                      onChange={(e) => {
+                        const v = setLang(editingP.badge, "ru", e.target.value);
+                        const empty = !getLang(v, "ru") && !getLang(v, "en");
+                        setEditingP({ ...editingP, badge: empty ? undefined : v });
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <Label>{t("admin.badge")} (EN)</Label>
+                    <Input
+                      value={getLang(editingP.badge, "en")}
+                      onChange={(e) => {
+                        const v = setLang(editingP.badge, "en", e.target.value);
+                        const empty = !getLang(v, "ru") && !getLang(v, "en");
+                        setEditingP({ ...editingP, badge: empty ? undefined : v });
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -359,7 +396,7 @@ const AdminPage = () => {
                   <SelectContent>
                     {categories.map((c) => (
                       <SelectItem key={c.slug} value={c.slug}>
-                        {c.emoji} {c.name}
+                        {c.emoji} {loc(c.name, "ru")}
                       </SelectItem>
                     ))}
                   </SelectContent>
