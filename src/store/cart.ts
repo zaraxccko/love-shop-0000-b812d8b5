@@ -21,6 +21,8 @@ export const DELIVERY_FEE_USD = 20;
 interface CartState {
   lines: CartLine[];
   delivery: boolean;
+  deliveryAddress: string;
+  setDeliveryAddress: (v: string) => void;
   setDelivery: (v: boolean) => void;
   toggleDelivery: () => void;
   add: (product: Product, opts?: AddOptions) => void;
