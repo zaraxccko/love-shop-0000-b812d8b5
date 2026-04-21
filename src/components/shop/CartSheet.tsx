@@ -1,6 +1,6 @@
-import { Minus, Plus, Trash2 } from "lucide-react";
+import { Minus, Plus, Trash2, Truck } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { useCart, lineKey } from "@/store/cart";
+import { useCart, lineKey, DELIVERY_FEE_USD } from "@/store/cart";
 import { formatTHB } from "@/lib/format";
 import { haptic } from "@/lib/telegram";
 import { useI18n, useT } from "@/lib/i18n";
@@ -30,6 +30,9 @@ export const CartSheet = ({ open, onOpenChange, onCheckout }: CartSheetProps) =>
   void rawLines; // subscribe to lines changes
   const setQty = useCart((s) => s.setQty);
   const remove = useCart((s) => s.remove);
+  const subtotal = useCart((s) => s.subtotalUSD());
+  const delivery = useCart((s) => s.delivery);
+  const toggleDelivery = useCart((s) => s.toggleDelivery);
   const total = useCart((s) => s.totalTHB());
   const t = useT();
   const lang = useI18n((s) => s.lang) ?? "ru";
@@ -146,6 +149,42 @@ export const CartSheet = ({ open, onOpenChange, onCheckout }: CartSheetProps) =>
 
         {lines.length > 0 && (
           <div className="px-5 pt-3 pb-6 border-t border-border bg-card">
+            <button
+              type="button"
+              onClick={() => {
+                haptic("light");
+                toggleDelivery();
+              }}
+              className={`w-full mb-3 rounded-2xl p-3 flex items-center gap-3 active:scale-[0.99] transition-colors ${
+                delivery
+                  ? "gradient-primary text-primary-foreground shadow-glow"
+                  : "bg-background border border-border"
+              }`}
+            >
+              <div
+                className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                  delivery ? "bg-primary-foreground/20" : "bg-muted"
+                }`}
+              >
+                <Truck className="w-4 h-4" />
+              </div>
+              <div className="flex-1 text-left">
+                <div className="font-bold text-sm">
+                  {lang === "ru" ? "Доставка курьером" : "Courier delivery"}
+                </div>
+                <div className={`text-[11px] ${delivery ? "opacity-80" : "text-muted-foreground"}`}>
+                  {lang === "ru" ? "Применяется ко всему заказу" : "Applied once to the whole order"}
+                </div>
+              </div>
+              <div className="font-bold text-sm">+${DELIVERY_FEE_USD}</div>
+            </button>
+
+            {delivery && (
+              <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+                <span>{lang === "ru" ? "Сумма" : "Subtotal"}</span>
+                <span>{formatTHB(subtotal)}</span>
+              </div>
+            )}
             <div className="flex items-center justify-between mb-3">
               <span className="text-muted-foreground">{t("cart.total")}</span>
               <span className="font-display font-bold text-2xl">{formatTHB(total)}</span>

@@ -16,15 +16,22 @@ export interface DisplayCartLine extends CartLine {
   isGift?: boolean;
 }
 
+export const DELIVERY_FEE_USD = 20;
+
 interface CartState {
   lines: CartLine[];
+  delivery: boolean;
+  setDelivery: (v: boolean) => void;
+  toggleDelivery: () => void;
   add: (product: Product, opts?: AddOptions) => void;
   remove: (key: string) => void;
   setQty: (key: string, qty: number) => void;
   clear: () => void;
   totalQty: () => number;
+  /** Сумма товаров без доставки */
+  subtotalUSD: () => number;
+  /** Итог с учётом доставки */
   totalTHB: () => number;
-  /** Paid lines + auto-generated gift lines (5g free for each unit ≥5g). */
   linesWithGifts: () => DisplayCartLine[];
 }
 
@@ -36,6 +43,9 @@ export const useCart = create<CartState>()(
   persist(
     (set, get) => ({
       lines: [],
+      delivery: false,
+      setDelivery: (v) => set({ delivery: v }),
+      toggleDelivery: () => set((s) => ({ delivery: !s.delivery })),
       add: (product, opts) =>
         set((state) => {
           const candidate: CartLine = {
@@ -58,7 +68,11 @@ export const useCart = create<CartState>()(
           return { lines: [...state.lines, candidate] };
         }),
       remove: (key) =>
-        set((state) => ({ lines: state.lines.filter((l) => lineKey(l) !== key) })),
+        set((state) => {
+          const lines = state.lines.filter((l) => lineKey(l) !== key);
+          // Если корзина опустела — сбрасываем доставку
+          return lines.length === 0 ? { lines, delivery: false } : { lines };
+        }),
       setQty: (key, qty) =>
         set((state) => ({
           lines:
@@ -66,13 +80,20 @@ export const useCart = create<CartState>()(
               ? state.lines.filter((l) => lineKey(l) !== key)
               : state.lines.map((l) => (lineKey(l) === key ? { ...l, qty } : l)),
         })),
-      clear: () => set({ lines: [] }),
+      clear: () => set({ lines: [], delivery: false }),
       totalQty: () => get().lines.reduce((s, l) => s + l.qty, 0),
-      totalTHB: () =>
+      subtotalUSD: () =>
         get().lines.reduce(
           (s, l) => s + l.qty * (l.priceUSD ?? l.product.priceTHB ?? 0),
           0
         ),
+      totalTHB: () => {
+        const sub = get().lines.reduce(
+          (s, l) => s + l.qty * (l.priceUSD ?? l.product.priceTHB ?? 0),
+          0
+        );
+        return sub + (get().delivery ? DELIVERY_FEE_USD : 0);
+      },
       linesWithGifts: () => {
         const out: DisplayCartLine[] = [];
         for (const l of get().lines) {
