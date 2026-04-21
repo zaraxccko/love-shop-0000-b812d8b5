@@ -107,43 +107,9 @@ export const CartSheet = ({ open, onOpenChange, onCheckout }: CartSheetProps) =>
 
         {lines.length > 0 && (
           <div className="px-5 pt-3 pb-6 border-t border-border bg-card">
-            <label className="flex items-center justify-between gap-3 bg-background rounded-2xl p-3 mb-3 cursor-pointer active:scale-[0.99] transition-[var(--transition-base)]">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center text-lg shrink-0">
-                  🛵
-                </div>
-                <div className="min-w-0">
-                  <div className="font-semibold text-sm">
-                    {lang === "ru" ? "Доставка" : "Delivery"}
-                  </div>
-                  <div className="text-[11px] text-muted-foreground">
-                    {lang === "ru" ? "+$20 по всем гео" : "+$20 all locations"}
-                  </div>
-                </div>
-              </div>
-              <input
-                type="checkbox"
-                checked={delivery}
-                onChange={(e) => {
-                  haptic("light");
-                  setDelivery(e.target.checked);
-                }}
-                className="w-5 h-5 accent-primary shrink-0"
-              />
-            </label>
-
-            {delivery && (
-              <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                <span>{lang === "ru" ? "Доставка" : "Delivery"}</span>
-                <span>{formatTHB(20)}</span>
-              </div>
-            )}
-
             <div className="flex items-center justify-between mb-3">
               <span className="text-muted-foreground">{t("cart.total")}</span>
-              <span className="font-display font-bold text-2xl">
-                {formatTHB(total + (delivery ? 20 : 0))}
-              </span>
+              <span className="font-display font-bold text-2xl">{formatTHB(total)}</span>
             </div>
 
             <button
