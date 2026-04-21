@@ -125,7 +125,7 @@ const Index = () => {
           ) : (
             <div className="grid grid-cols-2 gap-3">
               {filtered.map((p) => (
-                <ProductCard key={p.id} product={p} />
+                <ProductCard key={p.id} product={p} onOpen={setOpenProduct} />
               ))}
             </div>
           )}
@@ -141,6 +141,10 @@ const Index = () => {
           setCartOpen(false);
           alert("Checkout — next step 🙂");
         }}
+      />
+      <ProductSheet
+        product={openProduct}
+        onOpenChange={(o) => !o && setOpenProduct(null)}
       />
     </div>
   );
