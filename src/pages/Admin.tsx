@@ -3,8 +3,9 @@ import { Link } from "react-router-dom";
 import { Trash2, Pencil, Plus, RotateCcw, ArrowLeft } from "lucide-react";
 import { useCatalog } from "@/store/catalog";
 import { useT } from "@/lib/i18n";
+import { loc } from "@/lib/loc";
 import { COUNTRIES } from "@/data/locations";
-import type { Category, Product } from "@/types/shop";
+import type { Category, Product, LocalizedString } from "@/types/shop";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,8 +32,8 @@ const GRADIENTS = ["gradient-mango", "gradient-mint", "gradient-grape", "gradien
 
 const blankProduct = (): Product => ({
   id: `p_${Date.now().toString(36)}`,
-  name: "",
-  description: "",
+  name: { ru: "", en: "" },
+  description: { ru: "", en: "" },
   category: "",
   priceTHB: 0,
   weight: "",
@@ -44,10 +45,25 @@ const blankProduct = (): Product => ({
 
 const blankCategory = (): Category => ({
   slug: `cat_${Date.now().toString(36)}`,
-  name: "",
+  name: { ru: "", en: "" },
   emoji: "✨",
   gradient: "gradient-mango",
 });
+
+/** Read RU or EN from a LocalizedString safely. */
+const getLang = (v: LocalizedString | undefined, l: "ru" | "en"): string => {
+  if (v == null) return "";
+  if (typeof v === "string") return v;
+  return v[l] ?? "";
+};
+const setLang = (
+  v: LocalizedString | undefined,
+  l: "ru" | "en",
+  val: string
+): LocalizedString => {
+  const base = typeof v === "object" && v !== null ? v : { ru: typeof v === "string" ? v : "", en: "" };
+  return { ...base, [l]: val };
+};
 
 const fileToDataUrl = (file: File) =>
   new Promise<string>((res, rej) => {
