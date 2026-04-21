@@ -73,7 +73,7 @@ export const ProductSheet = ({ product, onOpenChange }: ProductSheetProps) => {
     <Sheet open={!!product} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className="rounded-t-3xl border-0 p-0 max-h-[90vh] flex flex-col bg-background"
+        className="rounded-t-3xl border-0 p-0 max-h-[90vh] flex flex-col bg-background [&>button.absolute]:hidden"
       >
         {/* Top image */}
         <div
@@ -89,7 +89,7 @@ export const ProductSheet = ({ product, onOpenChange }: ProductSheetProps) => {
           )}
           <button
             onClick={() => onOpenChange(false)}
-            className="absolute top-3 right-3 w-9 h-9 rounded-full bg-card/90 backdrop-blur flex items-center justify-center active:scale-90"
+            className="absolute top-3 right-3 z-20 w-9 h-9 rounded-full bg-card/90 backdrop-blur flex items-center justify-center active:scale-90 shadow-card"
             aria-label="Close"
           >
             <X className="w-4 h-4" />
