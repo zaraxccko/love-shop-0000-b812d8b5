@@ -735,7 +735,7 @@ const AdminPage = ({ onExit }: AdminPageProps) => {
                             {selectedCitiesWithDistricts.length > 0 && (
                               <div>
                                 <div className="text-[11px] text-muted-foreground mb-1">
-                                  Доступен в районах (пусто = во всех)
+                                  Доступен в районах (пусто = нигде)
                                 </div>
                                 <div className="space-y-1.5">
                                   {selectedCitiesWithDistricts.map((city) => (
