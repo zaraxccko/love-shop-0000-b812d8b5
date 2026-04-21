@@ -101,7 +101,7 @@ const Index = () => {
 
           {filtered.length === 0 ? (
             <div className="py-12 text-center text-muted-foreground">
-              <div className="text-5xl mb-2">🌸</div>
+              <div className="text-5xl font-display font-bold mb-2">404</div>
               {t("section.empty")}
             </div>
           ) : (
