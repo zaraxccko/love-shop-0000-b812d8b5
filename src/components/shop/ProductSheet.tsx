@@ -10,8 +10,8 @@ import { haptic } from "@/lib/telegram";
 import { COUNTRIES, findCity } from "@/data/locations";
 import { cn } from "@/lib/utils";
 
-/** Spawns a flying emoji from the button to the cart icon in the header. */
-const flyToCart = (sourceEl: HTMLElement, emoji: string) => {
+/** Spawns a flying product image (or emoji fallback) from the button to the cart icon in the header. */
+const flyToCart = (sourceEl: HTMLElement, imageUrl: string | undefined, emoji: string) => {
   const target = document.querySelector<HTMLElement>("[data-cart-target]");
   if (!target) return;
   const from = sourceEl.getBoundingClientRect();
@@ -22,23 +22,40 @@ const flyToCart = (sourceEl: HTMLElement, emoji: string) => {
   const endY = to.top + to.height / 2;
 
   const node = document.createElement("div");
-  node.textContent = emoji;
   node.style.cssText = `
     position: fixed;
     left: ${startX}px;
     top: ${startY}px;
+    width: 56px;
+    height: 56px;
     transform: translate(-50%, -50%);
-    font-size: 28px;
     z-index: 9999;
     pointer-events: none;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px -8px rgba(0,0,0,0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: hsl(var(--card));
     transition: transform 0.7s cubic-bezier(0.5, -0.2, 0.7, 1), opacity 0.7s ease-out;
     will-change: transform, opacity;
   `;
+
+  if (imageUrl) {
+    const img = document.createElement("img");
+    img.src = imageUrl;
+    img.style.cssText = "width:100%;height:100%;object-fit:cover;";
+    node.appendChild(img);
+  } else {
+    node.style.fontSize = "32px";
+    node.textContent = emoji;
+  }
+
   document.body.appendChild(node);
 
-  // Trigger animation on next frame
   requestAnimationFrame(() => {
-    node.style.transform = `translate(calc(-50% + ${endX - startX}px), calc(-50% + ${endY - startY}px)) scale(0.2)`;
+    node.style.transform = `translate(calc(-50% + ${endX - startX}px), calc(-50% + ${endY - startY}px)) scale(0.15)`;
     node.style.opacity = "0";
   });
 
