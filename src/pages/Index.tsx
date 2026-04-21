@@ -46,14 +46,29 @@ const Index = () => {
   const [cartOpen, setCartOpen] = useState(false);
   const [showLocPicker, setShowLocPicker] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
+  const [openProduct, setOpenProduct] = useState<Product | null>(null);
 
-  const cityProducts = useMemo(
-    () =>
-      city
-        ? products.filter((p) => !p.cities || p.cities.length === 0 || p.cities.includes(city))
-        : products,
-    [products, city]
-  );
+  const cityInfo = city ? findCity(city) : null;
+
+  const cityProducts = useMemo(() => {
+    if (!city || !cityInfo) return products;
+    const cityDistrictSlugs = new Set(
+      (cityInfo.city.districts ?? []).map((d) => d.slug)
+    );
+    const countrySlug = cityInfo.country.slug;
+    return products.filter((p) => {
+      // Must allow this city
+      if (p.cities && p.cities.length > 0 && !p.cities.includes(city)) return false;
+      // Must have at least one variant available in this city with a price for this country
+      const variants = p.variants ?? [];
+      if (variants.length === 0) return false;
+      return variants.some((v) => {
+        if (!v.pricesByCountry?.[countrySlug]) return false;
+        if (cityDistrictSlugs.size === 0) return true;
+        return (v.districts ?? []).some((d) => cityDistrictSlugs.has(d));
+      });
+    });
+  }, [products, city, cityInfo]);
 
   const featured = useMemo(
     () => cityProducts.find((p) => p.featured) ?? cityProducts[0],
