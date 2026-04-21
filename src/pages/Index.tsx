@@ -11,6 +11,8 @@ import { LocationPicker } from "@/components/shop/LocationPicker";
 import { ProductSheet } from "@/components/shop/ProductSheet";
 import { DepositPage } from "@/components/shop/DepositPage";
 import { AccountPage } from "@/components/shop/AccountPage";
+import { SubscriptionGate } from "@/components/shop/SubscriptionGate";
+import { useSubscription } from "@/store/subscription";
 import { useTelegram } from "@/lib/telegram";
 import { useI18n, useT } from "@/lib/i18n";
 import { useLocation } from "@/store/location";
@@ -64,6 +66,7 @@ const Index = () => {
   const cartDelivery = useCart((s) => s.delivery);
   const cartAddress = useCart((s) => s.deliveryAddress);
   const clearCart = useCart((s) => s.clear);
+  const subscribed = useSubscription((s) => s.subscribed);
 
   const handleCheckout = () => {
     if (cartLines.length === 0) return;
@@ -135,6 +138,8 @@ const Index = () => {
   if (isAdmin && showAdmin) return <AdminPage onExit={() => setShowAdmin(false)} />;
 
   if (!lang) return <SplashLanguage onPicked={() => {}} />;
+  // Subscription gate — admins skip it.
+  if (!isAdmin && !subscribed) return <SubscriptionGate />;
   if (!city || showLocPicker)
     return (
       <LocationPicker
