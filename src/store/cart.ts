@@ -46,6 +46,8 @@ export const useCart = create<CartState>()(
     (set, get) => ({
       lines: [],
       delivery: false,
+      deliveryAddress: "",
+      setDeliveryAddress: (v) => set({ deliveryAddress: v }),
       setDelivery: (v) => set({ delivery: v }),
       toggleDelivery: () => set((s) => ({ delivery: !s.delivery })),
       add: (product, opts) =>
