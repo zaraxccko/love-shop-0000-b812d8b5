@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Trash2, Pencil, Plus, RotateCcw, ArrowLeft } from "lucide-react";
+import { Trash2, Pencil, Plus, RotateCcw, Eye } from "lucide-react";
+import { useAuth } from "@/store/auth";
 import { useCatalog } from "@/store/catalog";
 import { useT } from "@/lib/i18n";
 import { loc } from "@/lib/loc";
@@ -93,9 +93,13 @@ const AdminPage = () => {
   return (
     <div className="min-h-screen max-w-md mx-auto bg-background pb-10">
       <header className="sticky top-0 z-10 bg-background/90 backdrop-blur px-5 pt-5 pb-3 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 text-sm text-muted-foreground active:scale-95">
-          <ArrowLeft className="w-4 h-4" /> {t("admin.back")}
-        </Link>
+        <button
+          onClick={() => useAuth.getState().logout()}
+          className="flex items-center gap-1.5 text-xs text-muted-foreground active:scale-95"
+          title="View shop"
+        >
+          <Eye className="w-4 h-4" /> {t("admin.viewShop")}
+        </button>
         <h1 className="font-display font-bold text-base">{t("admin.title")}</h1>
         <button
           onClick={() => {

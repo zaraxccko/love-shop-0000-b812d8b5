@@ -68,6 +68,7 @@ const dict = {
     "admin.deniedTitle": "Доступ запрещён",
     "admin.deniedTgSub": "Ваш Telegram ID не в списке администраторов.",
     "admin.deniedNoTgSub": "Откройте мини-приложение в Telegram, чтобы войти.",
+    "admin.viewShop": "Магазин",
   },
   en: {
     "splash.title": "Welcome",
@@ -133,6 +134,7 @@ const dict = {
     "admin.deniedTitle": "Access denied",
     "admin.deniedTgSub": "Your Telegram ID is not in the admin list.",
     "admin.deniedNoTgSub": "Open this Mini App from Telegram to sign in.",
+    "admin.viewShop": "View shop",
   },
 } as const;
 
