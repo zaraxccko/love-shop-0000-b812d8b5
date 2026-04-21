@@ -1,17 +1,30 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-// Default password (override by editing this file or via VITE_ADMIN_PASSWORD env var).
-// Also you can grant admin to specific Telegram user IDs via VITE_ADMIN_TG_IDS (comma-separated).
-const ENV_PASSWORD = (import.meta.env.VITE_ADMIN_PASSWORD as string | undefined) ?? "loveshop2025";
-const ENV_TG_IDS = ((import.meta.env.VITE_ADMIN_TG_IDS as string | undefined) ?? "")
-  .split(",")
-  .map((s) => s.trim())
-  .filter(Boolean)
-  .map(Number);
+// ============================================================
+// 🔐 НАСТРОЙКИ ДОСТУПА В АДМИНКУ
+// ============================================================
+//
+// 1) ПАРОЛЬ для входа (резервный способ).
+//    Замените значение ниже на свой пароль.
+const ADMIN_PASSWORD = "loveshop2025";
+
+// 2) СПИСОК TELEGRAM ID, которым разрешён вход в админку.
+//    Узнать свой ID можно у бота @userinfobot в Telegram.
+//    Добавляйте свои ID через запятую. Примеры:
+//
+//    const ADMIN_TELEGRAM_IDS: number[] = [123456789];
+//    const ADMIN_TELEGRAM_IDS: number[] = [123456789, 987654321];
+//
+const ADMIN_TELEGRAM_IDS: number[] = [
+  // 123456789, // ← раскомментируйте и впишите свой Telegram ID
+];
+
+// ============================================================
 
 export const MAX_ATTEMPTS = 5;
-export const LOCKOUT_MS = 5 * 60 * 1000; // 5 minutes
+export const LOCKOUT_MS = 5 * 60 * 1000; // 5 минут блокировки после 5 неверных попыток
+
 
 interface AuthState {
   isAdmin: boolean;
@@ -44,7 +57,7 @@ export const useAuth = create<AuthState>()(
         if (state.lockedUntil && state.lockedUntil <= now) {
           set({ lockedUntil: null, failedAttempts: 0 });
         }
-        if (pwd && pwd === ENV_PASSWORD) {
+        if (pwd && pwd === ADMIN_PASSWORD) {
           set({ isAdmin: true, failedAttempts: 0, lockedUntil: null });
           return { ok: true, locked: false, remaining: 0 };
         }
@@ -58,7 +71,7 @@ export const useAuth = create<AuthState>()(
         return { ok: false, locked: false, remaining: 0 };
       },
       loginWithTelegram: (tgUserId) => {
-        if (tgUserId && ENV_TG_IDS.includes(tgUserId)) {
+        if (tgUserId && ADMIN_TELEGRAM_IDS.includes(tgUserId)) {
           set({ isAdmin: true, failedAttempts: 0, lockedUntil: null });
           return true;
         }
