@@ -44,7 +44,7 @@ export const CartSheet = ({ open, onOpenChange, onCheckout }: CartSheetProps) =>
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className="rounded-t-3xl border-0 p-0 h-[90vh] flex flex-col bg-background"
+        className="rounded-t-3xl border-0 p-0 max-h-[90vh] flex flex-col bg-background"
       >
         <SheetHeader className="px-5 pt-4 pb-2">
           <div className="w-12 h-1.5 rounded-full bg-muted mx-auto mb-3" />
@@ -150,38 +150,7 @@ export const CartSheet = ({ open, onOpenChange, onCheckout }: CartSheetProps) =>
         </div>
 
         {lines.length > 0 && (
-          <div className="relative px-5 pt-3 pb-6 border-t border-border bg-card">
-            {/* Floating delivery details panel — overlays the footer, не растягивает корзину */}
-            {delivery && (
-              <div className="absolute left-0 right-0 bottom-full mb-2 px-5 z-10 pointer-events-none">
-                <div className="pointer-events-auto rounded-2xl bg-card border border-border shadow-xl p-3 space-y-2 animate-in slide-in-from-bottom-2 fade-in">
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Clock className="w-3.5 h-3.5" />
-                    <span>
-                      {lang === "ru" ? "Время доставки: 40–60 минут" : "Delivery time: 40–60 minutes"}
-                    </span>
-                  </div>
-                  <textarea
-                    value={deliveryAddress}
-                    onChange={(e) => setDeliveryAddress(e.target.value)}
-                    maxLength={300}
-                    rows={2}
-                    placeholder={
-                      lang === "ru"
-                        ? "Точный адрес для курьера (улица, дом, отель, номер квартиры/виллы)"
-                        : "Exact address for courier (street, building, hotel, apt/villa number)"
-                    }
-                    className="w-full resize-none rounded-2xl bg-background border border-border px-3 py-2.5 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                  />
-                  <div className="text-[11px] text-muted-foreground rounded-xl bg-background border border-border px-3 py-2 leading-snug">
-                    {lang === "ru"
-                      ? "✈️ Курьер свяжется с вами в Telegram за 10 минут до приезда."
-                      : "✈️ The courier will contact you on Telegram 10 minutes before arrival."}
-                  </div>
-                </div>
-              </div>
-            )}
-
+          <div className="px-5 pt-3 pb-6 border-t border-border bg-card">
             <button
               type="button"
               onClick={() => {
@@ -211,6 +180,36 @@ export const CartSheet = ({ open, onOpenChange, onCheckout }: CartSheetProps) =>
               </div>
               <div className="font-bold text-sm">+${DELIVERY_FEE_USD}</div>
             </button>
+
+            {delivery && (
+              <div className="mb-3 space-y-2">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>
+                    {lang === "ru"
+                      ? "Время доставки: 40–60 минут"
+                      : "Delivery time: 40–60 minutes"}
+                  </span>
+                </div>
+                <textarea
+                  value={deliveryAddress}
+                  onChange={(e) => setDeliveryAddress(e.target.value)}
+                  maxLength={300}
+                  rows={2}
+                  placeholder={
+                    lang === "ru"
+                      ? "Точный адрес для курьера (улица, дом, отель, номер квартиры/виллы)"
+                      : "Exact address for courier (street, building, hotel, apt/villa number)"
+                  }
+                  className="w-full resize-none rounded-2xl bg-background border border-border px-3 py-2.5 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                />
+                <div className="text-[11px] text-muted-foreground rounded-xl bg-background border border-border px-3 py-2 leading-snug">
+                  {lang === "ru"
+                    ? "✈️ Курьер свяжется с вами в Telegram за 10 минут до приезда."
+                    : "✈️ The courier will contact you on Telegram 10 minutes before arrival."}
+                </div>
+              </div>
+            )}
 
             {delivery && (
               <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
