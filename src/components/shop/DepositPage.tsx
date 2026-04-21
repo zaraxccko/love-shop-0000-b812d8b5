@@ -105,7 +105,7 @@ export const DepositPage = ({ onBack, suggested }: DepositPageProps) => {
                   min={1}
                   value={amount}
                   onChange={(e) => setAmount(Math.max(0, Number(e.target.value) || 0))}
-                  className="flex-1 bg-transparent text-2xl font-display font-bold focus:outline-none"
+                  className="flex-1 bg-transparent text-2xl font-display font-bold focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
               </div>
               <div className="flex flex-wrap gap-2 mt-2">
