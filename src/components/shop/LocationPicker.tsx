@@ -67,10 +67,12 @@ export const LocationPicker = ({ onPicked, showBack, onBack }: LocationPickerPro
                 if (c.cities.length === 1) choose(c.cities[0].slug);
                 else setCountry(c);
               }}
-              className="bg-card rounded-3xl p-4 shadow-card active:scale-95 transition-[var(--transition-base)] text-left flex flex-col items-start gap-2"
+              className="bg-card rounded-3xl p-4 shadow-card active:scale-95 transition-[var(--transition-base)] text-left flex flex-col gap-2"
             >
-              <span className="text-4xl">{c.flag}</span>
-              <span className="font-bold text-sm leading-tight">{c.name[lang]}</span>
+              <div className="flex items-start justify-between gap-2">
+                <span className="font-bold text-sm leading-tight">{c.name[lang]}</span>
+                <span className="text-3xl leading-none">{c.flag}</span>
+              </div>
               {c.cities.length > 1 && (
                 <span className="text-[11px] text-muted-foreground">
                   {`${c.cities.length} ${lang === "ru" ? "городов" : "cities"}`}
