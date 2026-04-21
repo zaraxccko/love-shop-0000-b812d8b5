@@ -56,24 +56,10 @@ export const ProductCard = ({ product, onOpen }: ProductCardProps) => {
             <span aria-hidden>→</span>
           </div>
         </button>
-        <div className="flex items-center justify-between mt-2">
-          <div className="font-bold text-sm">{formatTHB(product.priceTHB)}</div>
-          <button
-            onClick={() => {
-              haptic("medium");
-              add(product);
-            }}
-            className={cn(
-              "h-8 rounded-full text-sm font-bold flex items-center justify-center transition-[var(--transition-spring)] active:scale-90",
-              qty > 0
-                ? "px-3 bg-success text-success-foreground"
-                : "w-8 gradient-primary text-primary-foreground shadow-glow"
-            )}
-            aria-label="Add"
-          >
-            {qty > 0 ? qty : <Plus className="w-4 h-4" strokeWidth={3} />}
-          </button>
-        </div>
+      </div>
+    </div>
+  );
+};
       </div>
     </div>
   );
