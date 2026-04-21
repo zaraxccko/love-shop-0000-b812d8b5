@@ -261,7 +261,7 @@ const AdminPage = ({ onExit }: AdminPageProps) => {
                     {loc(p.name, "ru") || "—"}
                   </div>
                   <div className="text-[11px] text-muted-foreground truncate">
-                    ${p.priceTHB} · {loc(categories.find((c) => c.slug === p.category)?.name, "ru") || p.category}
+                    {loc(categories.find((c) => c.slug === p.category)?.name, "ru") || p.category}
                   </div>
                   <div className="text-[10px] text-muted-foreground mt-0.5">
                     {p.cities?.length ? p.cities.join(", ") : "all cities"}
@@ -438,33 +438,6 @@ const AdminPage = ({ onExit }: AdminPageProps) => {
               </div>
 
               <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <Label>{t("admin.price")}</Label>
-                  <Input
-                    type="number"
-                    value={editingP.priceTHB}
-                    onChange={(e) =>
-                      setEditingP({ ...editingP, priceTHB: Number(e.target.value) || 0 })
-                    }
-                  />
-                </div>
-                <div>
-                  <Label>{t("admin.stock")}</Label>
-                  <Input
-                    type="number"
-                    value={editingP.inStock}
-                    onChange={(e) =>
-                      setEditingP({ ...editingP, inStock: Number(e.target.value) || 0 })
-                    }
-                  />
-                </div>
-                <div>
-                  <Label>{t("admin.weight")}</Label>
-                  <Input
-                    value={editingP.weight ?? ""}
-                    onChange={(e) => setEditingP({ ...editingP, weight: e.target.value })}
-                  />
-                </div>
                 <div className="col-span-2 grid grid-cols-2 gap-2">
                   <div>
                     <Label>{t("admin.badge")} (RU)</Label>
