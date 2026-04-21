@@ -71,7 +71,7 @@ export const useAuth = create<AuthState>()(
         return { ok: false, locked: false, remaining: 0 };
       },
       loginWithTelegram: (tgUserId) => {
-        if (tgUserId && ENV_TG_IDS.includes(tgUserId)) {
+        if (tgUserId && ADMIN_TELEGRAM_IDS.includes(tgUserId)) {
           set({ isAdmin: true, failedAttempts: 0, lockedUntil: null });
           return true;
         }
