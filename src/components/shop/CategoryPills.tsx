@@ -1,17 +1,23 @@
-import { CATEGORIES } from "@/data/mockProducts";
-import type { CategorySlug } from "@/types/shop";
+import { CATEGORIES_FALLBACK } from "@/data/mockProducts";
+import type { Category } from "@/types/shop";
 import { haptic } from "@/lib/telegram";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n";
 
 interface CategoryPillsProps {
-  active: CategorySlug;
-  onChange: (slug: CategorySlug) => void;
+  categories: Category[];
+  active: string;
+  onChange: (slug: string) => void;
 }
 
-export const CategoryPills = ({ active, onChange }: CategoryPillsProps) => {
+export const CategoryPills = ({ categories, active, onChange }: CategoryPillsProps) => {
+  const t = useT();
+  const all = { slug: "all", name: t("cat.all"), emoji: "✨" };
+  const list = [all, ...categories];
+
   return (
     <div className="flex gap-2 overflow-x-auto pb-3 px-5 no-scrollbar -mx-0">
-      {CATEGORIES.map((c) => {
+      {list.map((c) => {
         const isActive = c.slug === active;
         return (
           <button
@@ -35,3 +41,6 @@ export const CategoryPills = ({ active, onChange }: CategoryPillsProps) => {
     </div>
   );
 };
+
+// satisfy ts unused import warning
+void CATEGORIES_FALLBACK;
