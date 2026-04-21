@@ -22,7 +22,7 @@ export interface Product {
   id: string;
   name: string;
   description: string;
-  category: Exclude<CategorySlug, "all">;
+  category: string;
   priceTHB: number;
   thcMg?: number;
   cbdMg?: number;
@@ -30,8 +30,11 @@ export interface Product {
   inStock: number;
   gradient: string;
   emoji: string;
+  imageUrl?: string;
   featured?: boolean;
   badge?: string;
+  /** city slugs where product is available; empty = everywhere */
+  cities?: string[];
 }
 
 export interface CartLine {
