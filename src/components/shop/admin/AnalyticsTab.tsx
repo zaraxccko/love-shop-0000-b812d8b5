@@ -94,7 +94,6 @@ const Sparkline = ({
           style={{ left: `${(active.x / w) * 100}%` }}
         >
           {unit}{active.value.toLocaleString("ru")}
-          <div className="text-[10px] font-normal opacity-70">{active.date}</div>
         </div>
       )}
     </div>
