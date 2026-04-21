@@ -139,7 +139,7 @@ export const AnalyticsTab = () => {
         <KPI icon={Activity} label="Активаций" value={a.totals.activations.toLocaleString("ru")} hint="/start всего" />
         <KPI icon={Users} label="Активных за день" value={a.totals.dau.toString()} hint="за сегодня" />
         <KPI icon={Users} label="Активных за месяц" value={a.totals.mau.toLocaleString("ru")} hint="за месяц" />
-        <KPI icon={DollarSign} label="Оборот" value={`$${a.totals.gmvUSD.toLocaleString("ru")}`} hint="за всё время" />
+        
         <KPI icon={ShoppingBag} label="Заказов" value={a.totals.ordersToday.toString()} hint="сегодня" />
       </div>
 
