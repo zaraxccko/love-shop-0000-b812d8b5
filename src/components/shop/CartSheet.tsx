@@ -21,7 +21,10 @@ const CRYPTO_OPTIONS = [
 ];
 
 export const CartSheet = ({ open, onOpenChange, onCheckout }: CartSheetProps) => {
-  const lines = useCart((s) => s.linesWithGifts());
+  const rawLines = useCart((s) => s.lines);
+  const linesWithGifts = useCart((s) => s.linesWithGifts);
+  const lines = linesWithGifts();
+  void rawLines; // subscribe to lines changes
   const setQty = useCart((s) => s.setQty);
   const remove = useCart((s) => s.remove);
   const total = useCart((s) => s.totalTHB());
