@@ -135,46 +135,6 @@ export const AnalyticsTab = () => {
         <FunnelRow label="Подтверждено" value={a.depositsFunnel.confirmed} total={a.depositsFunnel.created} />
       </div>
 
-      {/* Top products */}
-      <div className="bg-card rounded-2xl shadow-card p-4">
-        <div className="font-bold text-sm mb-3">Топ товаров</div>
-        <div className="space-y-2">
-          {a.topProducts.map((p, i) => (
-            <div key={p.name} className="flex items-center gap-2 text-sm">
-              <span className="w-5 text-muted-foreground text-xs">{i + 1}.</span>
-              <span className="flex-1 truncate">{p.name}</span>
-              <span className="text-xs text-muted-foreground">{p.orders} зак.</span>
-              <span className="font-bold text-xs w-16 text-right">${p.gmvUSD.toLocaleString("ru")}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Sources */}
-      <div className="bg-card rounded-2xl shadow-card p-4">
-        <div className="font-bold text-sm mb-3 flex items-center gap-1.5">
-          <Send className="w-4 h-4 text-primary" /> Источники трафика
-        </div>
-        <div className="space-y-2">
-          {a.sources.map((s) => {
-            const total = a.sources.reduce((acc, x) => acc + x.users, 0);
-            const pct = Math.round((s.users / total) * 100);
-            return (
-              <div key={s.source}>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="font-semibold">{s.source}</span>
-                  <span className="text-muted-foreground">
-                    {s.users} <span className="opacity-60">· {pct}%</span>
-                  </span>
-                </div>
-                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full gradient-primary rounded-full" style={{ width: `${pct}%` }} />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
     </TabsContent>
   );
 };
