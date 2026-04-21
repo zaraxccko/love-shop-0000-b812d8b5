@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { TabsContent } from "@/components/ui/tabs";
-import { TrendingUp, Users, ShoppingBag, DollarSign, Activity, Send } from "lucide-react";
+import { TrendingUp, Users, ShoppingBag, DollarSign, Activity } from "lucide-react";
 import { MOCK_ANALYTICS } from "@/lib/analyticsMock";
 
 const KPI = ({
@@ -25,23 +26,78 @@ const KPI = ({
 const Sparkline = ({
   data,
   color = "hsl(var(--primary))",
+  unit = "",
 }: {
   data: { date: string; value: number }[];
   color?: string;
+  unit?: string;
 }) => {
   const w = 280;
   const h = 60;
+  const [hover, setHover] = useState<number | null>(null);
   const max = Math.max(...data.map((d) => d.value), 1);
   const step = w / Math.max(data.length - 1, 1);
-  const points = data
-    .map((d, i) => `${i * step},${h - (d.value / max) * (h - 6) - 3}`)
-    .join(" ");
+  const coords = data.map((d, i) => ({
+    x: i * step,
+    y: h - (d.value / max) * (h - 6) - 3,
+    ...d,
+  }));
+  const points = coords.map((p) => `${p.x},${p.y}`).join(" ");
   const area = `0,${h} ${points} ${w},${h}`;
+  const active = hover !== null ? coords[hover] : null;
+
+  const onMove = (e: React.MouseEvent<SVGSVGElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const px = ((e.clientX - rect.left) / rect.width) * w;
+    let nearest = 0;
+    let best = Infinity;
+    coords.forEach((c, i) => {
+      const d = Math.abs(c.x - px);
+      if (d < best) {
+        best = d;
+        nearest = i;
+      }
+    });
+    setHover(nearest);
+  };
+
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-16">
-      <polygon points={area} fill={color} opacity={0.12} />
-      <polyline points={points} fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
+    <div className="relative">
+      <svg
+        viewBox={`0 0 ${w} ${h}`}
+        className="w-full h-16 touch-none"
+        preserveAspectRatio="none"
+        onMouseMove={onMove}
+        onMouseLeave={() => setHover(null)}
+        onTouchStart={(e) => {
+          const t = e.touches[0];
+          onMove({ clientX: t.clientX, currentTarget: e.currentTarget } as unknown as React.MouseEvent<SVGSVGElement>);
+        }}
+        onTouchMove={(e) => {
+          const t = e.touches[0];
+          onMove({ clientX: t.clientX, currentTarget: e.currentTarget } as unknown as React.MouseEvent<SVGSVGElement>);
+        }}
+        onTouchEnd={() => setHover(null)}
+      >
+        <polygon points={area} fill={color} opacity={0.12} />
+        <polyline points={points} fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+        {active && (
+          <>
+            <line x1={active.x} y1={0} x2={active.x} y2={h} stroke={color} strokeWidth={1} opacity={0.3} vectorEffect="non-scaling-stroke" />
+            <circle cx={active.x} cy={active.y} r={4} fill="hsl(var(--background))" stroke={color} strokeWidth={2} vectorEffect="non-scaling-stroke" />
+          </>
+        )}
+      </svg>
+      {active && (
+        <div
+          className="absolute -top-1 -translate-x-1/2 -translate-y-full bg-foreground text-background text-[11px] font-bold px-2 py-1 rounded-lg shadow-lg pointer-events-none whitespace-nowrap"
+          style={{ left: `${(active.x / w) * 100}%` }}
+        >
+          {unit}{active.value.toLocaleString("ru")}
+          <div className="text-[10px] font-normal opacity-70">{active.date}</div>
+        </div>
+      )}
+    </div>
   );
 };
 
