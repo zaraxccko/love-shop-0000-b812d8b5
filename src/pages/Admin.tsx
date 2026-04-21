@@ -73,7 +73,11 @@ const fileToDataUrl = (file: File) =>
     r.readAsDataURL(file);
   });
 
-const AdminPage = () => {
+interface AdminPageProps {
+  onExit?: () => void;
+}
+
+const AdminPage = ({ onExit }: AdminPageProps) => {
   const t = useT();
   const {
     products,
@@ -94,7 +98,7 @@ const AdminPage = () => {
     <div className="min-h-screen max-w-md mx-auto bg-background pb-10">
       <header className="sticky top-0 z-10 bg-background/90 backdrop-blur px-5 pt-5 pb-3 flex items-center justify-between">
         <button
-          onClick={() => useAuth.getState().logout()}
+          onClick={() => onExit?.()}
           className="flex items-center gap-1.5 text-xs text-muted-foreground active:scale-95"
           title="View shop"
         >

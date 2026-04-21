@@ -1,4 +1,4 @@
-import { ShoppingBag, MapPin } from "lucide-react";
+import { ShoppingBag, MapPin, Shield } from "lucide-react";
 import { useCart } from "@/store/cart";
 import { haptic } from "@/lib/telegram";
 import { useI18n, useT, type Lang } from "@/lib/i18n";
@@ -9,9 +9,11 @@ import logo from "@/assets/logo.webp";
 interface HeaderProps {
   onCartClick: () => void;
   onLocationClick: () => void;
+  showAdminButton?: boolean;
+  onAdminClick?: () => void;
 }
 
-export const Header = ({ onCartClick, onLocationClick }: HeaderProps) => {
+export const Header = ({ onCartClick, onLocationClick, showAdminButton, onAdminClick }: HeaderProps) => {
   const totalQty = useCart((s) => s.totalQty());
   const t = useT();
   const lang = useI18n((s) => s.lang) ?? "ru";
@@ -59,6 +61,19 @@ export const Header = ({ onCartClick, onLocationClick }: HeaderProps) => {
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
+          {showAdminButton && (
+            <button
+              onClick={() => {
+                haptic("light");
+                onAdminClick?.();
+              }}
+              className="h-11 px-3 rounded-2xl bg-card shadow-card flex items-center justify-center active:scale-95 transition-[var(--transition-base)]"
+              aria-label="Admin panel"
+              title="Admin"
+            >
+              <Shield className="w-5 h-5 text-primary" />
+            </button>
+          )}
           <button
             onClick={() => {
               haptic("light");

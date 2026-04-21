@@ -36,6 +36,7 @@ const Index = () => {
   const [category, setCategory] = useState<string>("all");
   const [cartOpen, setCartOpen] = useState(false);
   const [showLocPicker, setShowLocPicker] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(false);
 
   const cityProducts = useMemo(
     () =>
@@ -55,8 +56,8 @@ const Index = () => {
     [cityProducts, category]
   );
 
-  // Admins (whitelisted Telegram IDs) get the admin panel instead of the shop.
-  if (isAdmin) return <AdminPage />;
+  // Admins open the shop by default and switch to the admin panel via the header button.
+  if (isAdmin && showAdmin) return <AdminPage onExit={() => setShowAdmin(false)} />;
 
   if (!lang) return <SplashLanguage onPicked={() => {}} />;
   if (!city || showLocPicker)
@@ -70,7 +71,12 @@ const Index = () => {
 
   return (
     <div className="min-h-screen max-w-md mx-auto bg-background">
-      <Header onCartClick={() => setCartOpen(true)} onLocationClick={() => setShowLocPicker(true)} />
+      <Header
+        onCartClick={() => setCartOpen(true)}
+        onLocationClick={() => setShowLocPicker(true)}
+        showAdminButton={isAdmin}
+        onAdminClick={() => setShowAdmin(true)}
+      />
 
       <main className="pb-32">
         {featured && <Hero product={featured} />}
