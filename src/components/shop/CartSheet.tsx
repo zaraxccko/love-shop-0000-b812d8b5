@@ -33,6 +33,8 @@ export const CartSheet = ({ open, onOpenChange, onCheckout }: CartSheetProps) =>
   const subtotal = useCart((s) => s.subtotalUSD());
   const delivery = useCart((s) => s.delivery);
   const toggleDelivery = useCart((s) => s.toggleDelivery);
+  const deliveryAddress = useCart((s) => s.deliveryAddress);
+  const setDeliveryAddress = useCart((s) => s.setDeliveryAddress);
   const total = useCart((s) => s.totalTHB());
   const t = useT();
   const lang = useI18n((s) => s.lang) ?? "ru";
