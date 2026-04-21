@@ -309,26 +309,14 @@ export const ProductSheet = ({ product, onOpenChange }: ProductSheetProps) => {
                                   {t.emoji} {t.label[lang]}
                                 </span>
                               ))}
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  haptic("light");
-                                  toggleDelivery();
-                                }}
-                                className={`text-[10px] rounded-full px-2 py-0.5 inline-flex items-center gap-1 transition-colors active:scale-95 ${
-                                  delivery
-                                    ? "gradient-primary text-primary-foreground"
-                                    : "bg-muted text-muted-foreground"
-                                }`}
-                              >
-                                <Truck className="w-3 h-3" />
-                                {delivery
-                                  ? lang === "ru" ? `Доставка $${DELIVERY_FEE_USD}` : `Delivery $${DELIVERY_FEE_USD}`
-                                  : lang === "ru" ? `+ Доставка $${DELIVERY_FEE_USD}` : `+ Delivery $${DELIVERY_FEE_USD}`}
-                              </button>
                             </div>
                           )}
+                          <div className="w-full text-[10px] text-muted-foreground mt-1 inline-flex items-center gap-1">
+                            <Truck className="w-3 h-3" />
+                            {lang === "ru"
+                              ? `Возможна доставка +$${DELIVERY_FEE_USD} на весь заказ`
+                              : `Delivery available +$${DELIVERY_FEE_USD} per order`}
+                          </div>
                         </div>
                         <button
                           onClick={(e) => {
