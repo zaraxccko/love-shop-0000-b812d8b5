@@ -893,4 +893,104 @@ const AdminPage = ({ onExit }: AdminPageProps) => {
   );
 };
 
+const DepositsTab = () => {
+  const deposits = useAccount((s) => s.deposits);
+  const confirmDeposit = useAccount((s) => s.confirmDeposit);
+  const cancelDeposit = useAccount((s) => s.cancelDeposit);
+
+  const awaiting = deposits.filter((d) => d.status === "awaiting");
+  const others = deposits.filter((d) => d.status !== "awaiting");
+
+  const fmt = (iso: string) =>
+    new Date(iso).toLocaleString("ru", { dateStyle: "short", timeStyle: "short" });
+
+  const statusLabel: Record<string, string> = {
+    pending: "Создана",
+    awaiting: "Ждёт подтверждения",
+    confirmed: "Подтверждена",
+    cancelled: "Отменена",
+  };
+  const statusClass: Record<string, string> = {
+    pending: "bg-muted text-muted-foreground",
+    awaiting: "bg-primary/15 text-primary",
+    confirmed: "bg-emerald-500/15 text-emerald-600",
+    cancelled: "bg-destructive/10 text-destructive",
+  };
+
+  return (
+    <TabsContent value="deposits" className="space-y-3 mt-4">
+      <div>
+        <div className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-2">
+          Ожидают подтверждения ({awaiting.length})
+        </div>
+        {awaiting.length === 0 ? (
+          <div className="bg-card rounded-2xl p-4 text-center text-sm text-muted-foreground shadow-card">
+            Нет новых заявок
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {awaiting.map((d) => (
+              <div key={d.id} className="bg-card rounded-2xl p-3 shadow-card space-y-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-display font-bold text-lg">${d.amountUSD}</div>
+                    <div className="text-[11px] text-muted-foreground">
+                      {d.crypto} · {fmt(d.paidAt ?? d.createdAt)}
+                    </div>
+                  </div>
+                  <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${statusClass.awaiting}`}>
+                    {statusLabel.awaiting}
+                  </span>
+                </div>
+                <div className="font-mono text-[11px] break-all bg-background rounded-lg p-2">
+                  {d.address}
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => confirmDeposit(d.id)}
+                    className="flex-1 gradient-primary text-primary-foreground font-bold py-2 rounded-xl flex items-center justify-center gap-1 active:scale-95"
+                  >
+                    <Check className="w-4 h-4" /> Подтвердить
+                  </button>
+                  <button
+                    onClick={() => cancelDeposit(d.id)}
+                    className="flex-1 bg-background border border-border font-bold py-2 rounded-xl flex items-center justify-center gap-1 active:scale-95 text-destructive"
+                  >
+                    <X className="w-4 h-4" /> Отклонить
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div>
+        <div className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-2 mt-4">
+          История ({others.length})
+        </div>
+        {others.length === 0 ? (
+          <div className="bg-card rounded-2xl p-4 text-center text-sm text-muted-foreground shadow-card">
+            Пусто
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {others.map((d) => (
+              <div key={d.id} className="bg-card rounded-2xl p-3 shadow-card flex items-center justify-between">
+                <div>
+                  <div className="font-bold">${d.amountUSD} · {d.crypto}</div>
+                  <div className="text-[11px] text-muted-foreground">{fmt(d.createdAt)}</div>
+                </div>
+                <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${statusClass[d.status]}`}>
+                  {statusLabel[d.status]}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </TabsContent>
+  );
+};
+
 export default AdminPage;
