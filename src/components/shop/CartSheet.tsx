@@ -182,6 +182,31 @@ export const CartSheet = ({ open, onOpenChange, onCheckout }: CartSheetProps) =>
             </button>
 
             {delivery && (
+              <div className="mb-3 space-y-2">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>
+                    {lang === "ru"
+                      ? "Время доставки: 40–60 минут"
+                      : "Delivery time: 40–60 minutes"}
+                  </span>
+                </div>
+                <textarea
+                  value={deliveryAddress}
+                  onChange={(e) => setDeliveryAddress(e.target.value)}
+                  maxLength={300}
+                  rows={2}
+                  placeholder={
+                    lang === "ru"
+                      ? "Точный адрес для курьера (улица, дом, отель, номер квартиры/виллы)"
+                      : "Exact address for courier (street, building, hotel, apt/villa number)"
+                  }
+                  className="w-full resize-none rounded-2xl bg-background border border-border px-3 py-2.5 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                />
+              </div>
+            )}
+
+            {delivery && (
               <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
                 <span>{lang === "ru" ? "Сумма" : "Subtotal"}</span>
                 <span>{formatTHB(subtotal)}</span>
