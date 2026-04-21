@@ -62,6 +62,9 @@ const dict = {
     "admin.login": "Войти",
     "admin.logout": "Выйти",
     "admin.wrongPassword": "Неверный пароль",
+    "admin.attemptsLeft": "Осталось попыток",
+    "admin.lockedTitle": "Слишком много попыток",
+    "admin.lockedSub": "Попробуйте снова через",
   },
   en: {
     "splash.title": "Welcome",
@@ -121,6 +124,9 @@ const dict = {
     "admin.login": "Sign in",
     "admin.logout": "Sign out",
     "admin.wrongPassword": "Wrong password",
+    "admin.attemptsLeft": "Attempts left",
+    "admin.lockedTitle": "Too many attempts",
+    "admin.lockedSub": "Try again in",
   },
 } as const;
 
