@@ -37,16 +37,6 @@ export const ProductCard = ({ product, onOpen }: ProductCardProps) => {
         ) : (
           <span className="text-[64px] drop-shadow-sm select-none">{product.emoji}</span>
         )}
-        {product.thcMg && (
-          <span className="absolute top-2 left-2 bg-foreground/85 backdrop-blur text-background text-[10px] font-bold px-2 py-1 rounded-full">
-            THC {product.thcMg}mg
-          </span>
-        )}
-        {product.cbdMg && !product.thcMg && (
-          <span className="absolute top-2 left-2 bg-success text-success-foreground text-[10px] font-bold px-2 py-1 rounded-full">
-            CBD {product.cbdMg}mg
-          </span>
-        )}
         {product.badge && (
           <span className="absolute top-2 right-2 bg-card text-primary text-[10px] font-bold px-2 py-1 rounded-full shadow-card">
             {loc(product.badge, lang)}
