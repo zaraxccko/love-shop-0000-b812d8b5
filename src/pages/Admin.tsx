@@ -261,7 +261,7 @@ const AdminPage = ({ onExit }: AdminPageProps) => {
                     {loc(p.name, "ru") || "—"}
                   </div>
                   <div className="text-[11px] text-muted-foreground truncate">
-                    ${p.priceTHB} · {loc(categories.find((c) => c.slug === p.category)?.name, "ru") || p.category}
+                    {loc(categories.find((c) => c.slug === p.category)?.name, "ru") || p.category}
                   </div>
                   <div className="text-[10px] text-muted-foreground mt-0.5">
                     {p.cities?.length ? p.cities.join(", ") : "all cities"}
