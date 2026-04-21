@@ -3,6 +3,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { useCart } from "@/store/cart";
 import { formatTHB } from "@/lib/format";
 import { haptic } from "@/lib/telegram";
+import { useT } from "@/lib/i18n";
 
 interface CartSheetProps {
   open: boolean;
@@ -15,6 +16,7 @@ export const CartSheet = ({ open, onOpenChange, onCheckout }: CartSheetProps) =>
   const setQty = useCart((s) => s.setQty);
   const remove = useCart((s) => s.remove);
   const total = useCart((s) => s.totalTHB());
+  const t = useT();
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -24,15 +26,15 @@ export const CartSheet = ({ open, onOpenChange, onCheckout }: CartSheetProps) =>
       >
         <SheetHeader className="px-5 pt-4 pb-2">
           <div className="w-12 h-1.5 rounded-full bg-muted mx-auto mb-3" />
-          <SheetTitle className="font-display text-2xl text-left">Корзина</SheetTitle>
+          <SheetTitle className="font-display text-2xl text-left">{t("cart.title")}</SheetTitle>
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto px-5 pb-4">
           {lines.length === 0 ? (
             <div className="py-16 text-center">
               <div className="text-6xl mb-3">🛍️</div>
-              <div className="font-semibold">Пока пусто</div>
-              <div className="text-sm text-muted-foreground mt-1">Добавьте что-нибудь сладкое</div>
+              <div className="font-semibold">{t("cart.empty.title")}</div>
+              <div className="text-sm text-muted-foreground mt-1">{t("cart.empty.sub")}</div>
             </div>
           ) : (
             <div className="space-y-3">
@@ -42,9 +44,13 @@ export const CartSheet = ({ open, onOpenChange, onCheckout }: CartSheetProps) =>
                   className="bg-card rounded-2xl p-3 flex items-center gap-3 shadow-card"
                 >
                   <div
-                    className={`w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 ${line.product.gradient}`}
+                    className={`w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 overflow-hidden ${!line.product.imageUrl ? line.product.gradient : ""}`}
                   >
-                    <span className="text-3xl">{line.product.emoji}</span>
+                    {line.product.imageUrl ? (
+                      <img src={line.product.imageUrl} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-3xl">{line.product.emoji}</span>
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="font-semibold text-sm leading-tight line-clamp-2">
@@ -62,7 +68,7 @@ export const CartSheet = ({ open, onOpenChange, onCheckout }: CartSheetProps) =>
                         else setQty(line.product.id, line.qty - 1);
                       }}
                       className="w-7 h-7 rounded-full bg-card flex items-center justify-center active:scale-90 transition-[var(--transition-base)]"
-                      aria-label="Меньше"
+                      aria-label="-"
                     >
                       {line.qty === 1 ? (
                         <Trash2 className="w-3.5 h-3.5 text-destructive" />
@@ -78,7 +84,7 @@ export const CartSheet = ({ open, onOpenChange, onCheckout }: CartSheetProps) =>
                       }}
                       disabled={line.qty >= line.product.inStock}
                       className="w-7 h-7 rounded-full gradient-primary text-primary-foreground flex items-center justify-center active:scale-90 transition-[var(--transition-base)] disabled:opacity-40"
-                      aria-label="Больше"
+                      aria-label="+"
                     >
                       <Plus className="w-3.5 h-3.5" strokeWidth={3} />
                     </button>
@@ -92,7 +98,7 @@ export const CartSheet = ({ open, onOpenChange, onCheckout }: CartSheetProps) =>
         {lines.length > 0 && (
           <div className="px-5 pt-3 pb-6 border-t border-border bg-card">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-muted-foreground">Итого</span>
+              <span className="text-muted-foreground">{t("cart.total")}</span>
               <span className="font-display font-bold text-2xl">{formatTHB(total)}</span>
             </div>
             <button
@@ -102,11 +108,9 @@ export const CartSheet = ({ open, onOpenChange, onCheckout }: CartSheetProps) =>
               }}
               className="w-full gradient-primary text-primary-foreground font-bold py-4 rounded-2xl shadow-glow active:scale-[0.98] transition-[var(--transition-base)]"
             >
-              Оформить заказ
+              {t("cart.checkout")}
             </button>
-            <div className="text-center text-[11px] text-muted-foreground mt-2">
-              Самовывоз • оплата криптой
-            </div>
+            <div className="text-center text-[11px] text-muted-foreground mt-2">{t("cart.note")}</div>
           </div>
         )}
       </SheetContent>

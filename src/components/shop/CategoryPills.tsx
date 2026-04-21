@@ -1,4 +1,3 @@
-import { CATEGORIES_FALLBACK } from "@/data/mockProducts";
 import type { Category } from "@/types/shop";
 import { haptic } from "@/lib/telegram";
 import { cn } from "@/lib/utils";
@@ -42,5 +41,3 @@ export const CategoryPills = ({ categories, active, onChange }: CategoryPillsPro
   );
 };
 
-// satisfy ts unused import warning
-void CATEGORIES_FALLBACK;

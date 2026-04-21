@@ -1,52 +1,82 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { Header } from "@/components/shop/Header";
 import { Hero } from "@/components/shop/Hero";
 import { CategoryPills } from "@/components/shop/CategoryPills";
 import { ProductCard } from "@/components/shop/ProductCard";
 import { CartSheet } from "@/components/shop/CartSheet";
 import { StickyCartBar } from "@/components/shop/StickyCartBar";
-import { PRODUCTS } from "@/data/mockProducts";
+import { SplashLanguage } from "@/components/shop/SplashLanguage";
+import { LocationPicker } from "@/components/shop/LocationPicker";
 import { useTelegram } from "@/lib/telegram";
-import type { CategorySlug } from "@/types/shop";
+import { useI18n, useT } from "@/lib/i18n";
+import { useLocation } from "@/store/location";
+import { useCatalog } from "@/store/catalog";
+import { Settings } from "lucide-react";
 
 const Index = () => {
-  useTelegram(); // initialize TG WebApp if available
-  const [category, setCategory] = useState<CategorySlug>("all");
-  const [cartOpen, setCartOpen] = useState(false);
+  useTelegram();
+  const t = useT();
+  const lang = useI18n((s) => s.lang);
+  const city = useLocation((s) => s.city);
+  const products = useCatalog((s) => s.products);
+  const categories = useCatalog((s) => s.categories);
 
-  const featured = useMemo(() => PRODUCTS.find((p) => p.featured) ?? PRODUCTS[0], []);
-  const filtered = useMemo(
-    () => (category === "all" ? PRODUCTS : PRODUCTS.filter((p) => p.category === category)),
-    [category]
+  const [category, setCategory] = useState<string>("all");
+  const [cartOpen, setCartOpen] = useState(false);
+  const [showLocPicker, setShowLocPicker] = useState(false);
+
+  const cityProducts = useMemo(
+    () =>
+      city
+        ? products.filter((p) => !p.cities || p.cities.length === 0 || p.cities.includes(city))
+        : products,
+    [products, city]
   );
 
-  const handleCheckout = () => {
-    setCartOpen(false);
-    // TODO: navigate to /checkout — добавим на следующем шаге
-    alert("Чекаут будет добавлен на следующем шаге 🙂");
-  };
+  const featured = useMemo(
+    () => cityProducts.find((p) => p.featured) ?? cityProducts[0],
+    [cityProducts]
+  );
+
+  const filtered = useMemo(
+    () => (category === "all" ? cityProducts : cityProducts.filter((p) => p.category === category)),
+    [cityProducts, category]
+  );
+
+  if (!lang) return <SplashLanguage onPicked={() => {}} />;
+  if (!city || showLocPicker)
+    return (
+      <LocationPicker
+        showBack={!!city}
+        onBack={() => setShowLocPicker(false)}
+        onPicked={() => setShowLocPicker(false)}
+      />
+    );
 
   return (
     <div className="min-h-screen max-w-md mx-auto bg-background">
-      <Header onCartClick={() => setCartOpen(true)} />
+      <Header onCartClick={() => setCartOpen(true)} onLocationClick={() => setShowLocPicker(true)} />
 
       <main className="pb-32">
-        <Hero product={featured} />
+        {featured && <Hero product={featured} />}
 
-        <CategoryPills active={category} onChange={setCategory} />
+        <CategoryPills categories={categories} active={category} onChange={setCategory} />
 
         <section className="px-5">
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-display font-bold text-xl">
-              {category === "all" ? "Все товары" : "Категория"}
+              {category === "all" ? t("section.allProducts") : t("section.category")}
             </h2>
-            <span className="text-xs text-muted-foreground">{filtered.length} товаров</span>
+            <span className="text-xs text-muted-foreground">
+              {filtered.length} {t("section.count")}
+            </span>
           </div>
 
           {filtered.length === 0 ? (
             <div className="py-12 text-center text-muted-foreground">
               <div className="text-5xl mb-2">🌸</div>
-              Здесь пока пусто
+              {t("section.empty")}
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-3">
@@ -55,11 +85,26 @@ const Index = () => {
               ))}
             </div>
           )}
+
+          <Link
+            to="/admin"
+            className="mt-6 mb-2 flex items-center justify-center gap-2 text-xs text-muted-foreground py-3"
+          >
+            <Settings className="w-3.5 h-3.5" />
+            {t("admin.openAdmin")}
+          </Link>
         </section>
       </main>
 
       <StickyCartBar onClick={() => setCartOpen(true)} />
-      <CartSheet open={cartOpen} onOpenChange={setCartOpen} onCheckout={handleCheckout} />
+      <CartSheet
+        open={cartOpen}
+        onOpenChange={setCartOpen}
+        onCheckout={() => {
+          setCartOpen(false);
+          alert("Checkout — next step 🙂");
+        }}
+      />
     </div>
   );
 };

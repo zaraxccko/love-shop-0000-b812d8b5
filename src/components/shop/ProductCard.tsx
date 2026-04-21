@@ -20,10 +20,19 @@ export const ProductCard = ({ product, onOpen }: ProductCardProps) => {
         onClick={() => onOpen?.(product)}
         className={cn(
           "aspect-square relative flex items-center justify-center overflow-hidden",
-          product.gradient
+          !product.imageUrl && product.gradient
         )}
       >
-        <span className="text-[64px] drop-shadow-sm select-none">{product.emoji}</span>
+        {product.imageUrl ? (
+          <img
+            src={product.imageUrl}
+            alt={product.name}
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
+        ) : (
+          <span className="text-[64px] drop-shadow-sm select-none">{product.emoji}</span>
+        )}
         {product.thcMg && (
           <span className="absolute top-2 left-2 bg-foreground/85 backdrop-blur text-background text-[10px] font-bold px-2 py-1 rounded-full">
             THC {product.thcMg}mg
@@ -58,7 +67,7 @@ export const ProductCard = ({ product, onOpen }: ProductCardProps) => {
                 ? "px-3 bg-success text-success-foreground"
                 : "w-8 gradient-primary text-primary-foreground shadow-glow"
             )}
-            aria-label="Добавить"
+            aria-label="Add"
           >
             {qty > 0 ? qty : <Plus className="w-4 h-4" strokeWidth={3} />}
           </button>
