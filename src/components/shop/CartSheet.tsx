@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useCart } from "@/store/cart";
@@ -12,6 +13,15 @@ interface CartSheetProps {
   onCheckout: () => void;
 }
 
+const CRYPTO_OPTIONS = [
+  { symbol: "BTC", name: "Bitcoin" },
+  { symbol: "ETH", name: "Ethereum" },
+  { symbol: "USDT", name: "Tether" },
+  { symbol: "USDC", name: "USD Coin" },
+  { symbol: "TON", name: "Toncoin" },
+  { symbol: "SOL", name: "Solana" },
+];
+
 export const CartSheet = ({ open, onOpenChange, onCheckout }: CartSheetProps) => {
   const lines = useCart((s) => s.lines);
   const setQty = useCart((s) => s.setQty);
@@ -19,12 +29,13 @@ export const CartSheet = ({ open, onOpenChange, onCheckout }: CartSheetProps) =>
   const total = useCart((s) => s.totalTHB());
   const t = useT();
   const lang = useI18n((s) => s.lang) ?? "ru";
+  const [delivery, setDelivery] = useState(false);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className="rounded-t-3xl border-0 p-0 max-h-[85vh] flex flex-col bg-background"
+        className="rounded-t-3xl border-0 p-0 max-h-[90vh] flex flex-col bg-background"
       >
         <SheetHeader className="px-5 pt-4 pb-2">
           <div className="w-12 h-1.5 rounded-full bg-muted mx-auto mb-3" />
@@ -99,10 +110,45 @@ export const CartSheet = ({ open, onOpenChange, onCheckout }: CartSheetProps) =>
 
         {lines.length > 0 && (
           <div className="px-5 pt-3 pb-6 border-t border-border bg-card">
+            <label className="flex items-center justify-between gap-3 bg-background rounded-2xl p-3 mb-3 cursor-pointer active:scale-[0.99] transition-[var(--transition-base)]">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center text-lg shrink-0">
+                  🛵
+                </div>
+                <div className="min-w-0">
+                  <div className="font-semibold text-sm">
+                    {lang === "ru" ? "Доставка" : "Delivery"}
+                  </div>
+                  <div className="text-[11px] text-muted-foreground">
+                    {lang === "ru" ? "+$20 по всем гео" : "+$20 all locations"}
+                  </div>
+                </div>
+              </div>
+              <input
+                type="checkbox"
+                checked={delivery}
+                onChange={(e) => {
+                  haptic("light");
+                  setDelivery(e.target.checked);
+                }}
+                className="w-5 h-5 accent-primary shrink-0"
+              />
+            </label>
+
+            {delivery && (
+              <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+                <span>{lang === "ru" ? "Доставка" : "Delivery"}</span>
+                <span>{formatTHB(20)}</span>
+              </div>
+            )}
+
             <div className="flex items-center justify-between mb-3">
               <span className="text-muted-foreground">{t("cart.total")}</span>
-              <span className="font-display font-bold text-2xl">{formatTHB(total)}</span>
+              <span className="font-display font-bold text-2xl">
+                {formatTHB(total + (delivery ? 20 : 0))}
+              </span>
             </div>
+
             <button
               onClick={() => {
                 haptic("medium");
@@ -112,7 +158,23 @@ export const CartSheet = ({ open, onOpenChange, onCheckout }: CartSheetProps) =>
             >
               {t("cart.checkout")}
             </button>
-            <div className="text-center text-[11px] text-muted-foreground mt-2">{t("cart.note")}</div>
+
+            <div className="mt-4">
+              <div className="text-[11px] text-muted-foreground text-center mb-2">
+                {lang === "ru" ? "Принимаем к оплате" : "We accept"}
+              </div>
+              <div className="flex flex-wrap justify-center gap-1.5">
+                {CRYPTO_OPTIONS.map((c) => (
+                  <span
+                    key={c.symbol}
+                    className="text-[10px] font-bold bg-background border border-border rounded-full px-2.5 py-1 text-foreground/80"
+                    title={c.name}
+                  >
+                    {c.symbol}
+                  </span>
+                ))}
+              </div>
+            </div>
           </div>
         )}
       </SheetContent>
