@@ -32,8 +32,7 @@ export const CartSheet = ({ open, onOpenChange, onCheckout }: CartSheetProps) =>
   const total = useCart((s) => s.totalTHB());
   const t = useT();
   const lang = useI18n((s) => s.lang) ?? "ru";
-  const citySlug = useLocation((s) => s.city);
-  const city = citySlug ? findCity(citySlug)?.city : null;
+  void useLocation((s) => s.city); // re-render on city change
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
