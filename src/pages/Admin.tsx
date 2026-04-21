@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Trash2, Pencil, Plus, RotateCcw, Eye, ChevronLeft, MapPin } from "lucide-react";
+import { Trash2, Pencil, Plus, RotateCcw, Eye, ChevronLeft, MapPin, Check, X } from "lucide-react";
 import { useAuth } from "@/store/auth";
 import { useCatalog } from "@/store/catalog";
+import { useAccount } from "@/store/account";
 import { useT } from "@/lib/i18n";
 import { loc } from "@/lib/loc";
 import { COUNTRIES } from "@/data/locations";
