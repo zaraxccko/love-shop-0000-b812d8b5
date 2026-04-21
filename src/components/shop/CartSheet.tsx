@@ -82,6 +82,11 @@ export const CartSheet = ({ open, onOpenChange, onCheckout }: CartSheetProps) =>
                         {loc(line.product.name, lang)}
                         <span className="text-muted-foreground font-normal">{variantLabel}</span>
                       </div>
+                      {line.districtSlug && (
+                        <div className="text-[11px] text-muted-foreground mt-0.5">
+                          📍 {city?.districts?.find((d) => d.slug === line.districtSlug)?.name[lang] ?? line.districtSlug}
+                        </div>
+                      )}
                       {isGift ? (
                         <div className="text-primary font-bold text-xs mt-1 uppercase tracking-wide">
                           {lang === "ru" ? `Подарок × ${line.qty}` : `Gift × ${line.qty}`}
