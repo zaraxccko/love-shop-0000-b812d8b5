@@ -7,6 +7,7 @@ import { useI18n, useT } from "@/lib/i18n";
 import { loc } from "@/lib/loc";
 import { useLocation } from "@/store/location";
 import { findDistrict } from "@/data/locations";
+import { STASH_TYPES } from "@/types/shop";
 
 interface CartSheetProps {
   open: boolean;
@@ -81,9 +82,19 @@ export const CartSheet = ({ open, onOpenChange, onCheckout }: CartSheetProps) =>
                         {loc(line.product.name, lang)}
                         <span className="text-muted-foreground font-normal">{variantLabel}</span>
                       </div>
-                      {line.districtSlug && (
-                        <div className="text-[11px] text-muted-foreground mt-0.5">
-                          📍 {findDistrict(line.districtSlug)?.name[lang] ?? line.districtSlug}
+                      {(line.districtSlug || line.stashType) && (
+                        <div className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1.5 flex-wrap">
+                          {line.districtSlug && (
+                            <span>📍 {findDistrict(line.districtSlug)?.name[lang] ?? line.districtSlug}</span>
+                          )}
+                          {line.stashType && (() => {
+                            const meta = STASH_TYPES.find((t) => t.value === line.stashType);
+                            return meta ? (
+                              <span className="bg-muted rounded-full px-1.5 py-0.5">
+                                {meta.emoji} {meta.label[lang]}
+                              </span>
+                            ) : null;
+                          })()}
                         </div>
                       )}
                       {isGift ? (

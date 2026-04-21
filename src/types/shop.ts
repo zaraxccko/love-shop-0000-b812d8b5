@@ -21,6 +21,21 @@ export interface Category {
   gradient: string;
 }
 
+/** Тип закладки. */
+export type StashType = "prikop" | "klad" | "magnit";
+
+export const STASH_TYPES: { value: StashType; label: { ru: string; en: string }; emoji: string }[] = [
+  { value: "prikop", label: { ru: "Прикоп", en: "Prikop" }, emoji: "🪨" },
+  { value: "klad", label: { ru: "Клад", en: "Klad" }, emoji: "📦" },
+  { value: "magnit", label: { ru: "Магнит", en: "Magnet" }, emoji: "🧲" },
+];
+
+/** Конкретная закладка варианта в районе с указанным типом. */
+export interface VariantStash {
+  districtSlug: string;
+  type: StashType;
+}
+
 /** A weight-based variant of a product (e.g. 1g, 2g, 5g). */
 export interface ProductVariant {
   /** Unique id within the product, e.g. "1g". */
@@ -29,7 +44,9 @@ export interface ProductVariant {
   grams: number;
   /** Price per country slug ("thailand", "vietnam", "bali", "kl"). */
   pricesByCountry: Partial<Record<string, number>>;
-  /** District slugs where this variant is available. Empty = all districts of the product's cities. */
+  /** Закладки: пары (район + тип). Пара (district+type) уникальна в пределах варианта. */
+  stashes?: VariantStash[];
+  /** @deprecated используем stashes. Оставлено для обратной совместимости. */
   districts?: string[];
 }
 
@@ -64,6 +81,8 @@ export interface CartLine {
   variantId?: string;
   /** District where it was added */
   districtSlug?: string;
+  /** Тип закладки */
+  stashType?: StashType;
   /** Price snapshot at add time (USD) */
   priceUSD?: number;
 }

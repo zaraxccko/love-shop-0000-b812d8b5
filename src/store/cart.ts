@@ -1,13 +1,14 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { CartLine, Product } from "@/types/shop";
+import type { CartLine, Product, StashType } from "@/types/shop";
 
-const lineKey = (l: Pick<CartLine, "product" | "variantId" | "districtSlug"> & { isGift?: boolean }) =>
-  `${l.product.id}::${l.variantId ?? ""}::${l.districtSlug ?? ""}${l.isGift ? "::gift" : ""}`;
+const lineKey = (l: Pick<CartLine, "product" | "variantId" | "districtSlug" | "stashType"> & { isGift?: boolean }) =>
+  `${l.product.id}::${l.variantId ?? ""}::${l.districtSlug ?? ""}::${l.stashType ?? ""}${l.isGift ? "::gift" : ""}`;
 
 interface AddOptions {
   variantId?: string;
   districtSlug?: string;
+  stashType?: StashType;
   priceUSD?: number;
 }
 
@@ -42,6 +43,7 @@ export const useCart = create<CartState>()(
             qty: 1,
             variantId: opts?.variantId,
             districtSlug: opts?.districtSlug,
+            stashType: opts?.stashType,
             priceUSD: opts?.priceUSD,
           };
           const key = lineKey(candidate);
@@ -82,9 +84,10 @@ export const useCart = create<CartState>()(
             if (giftVariant) {
               out.push({
                 product: l.product,
-                qty: l.qty, // 1 gift per unit purchased
+                qty: l.qty,
                 variantId: giftVariant.id,
                 districtSlug: l.districtSlug,
+                stashType: l.stashType,
                 priceUSD: 0,
                 isGift: true,
               });

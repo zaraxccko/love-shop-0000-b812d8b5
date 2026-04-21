@@ -1,4 +1,4 @@
-import type { Category, Product, ProductVariant } from "@/types/shop";
+import type { Category, Product, ProductVariant, VariantStash, StashType } from "@/types/shop";
 import { COUNTRIES } from "./locations";
 
 export const CATEGORIES: Category[] = [
@@ -9,12 +9,6 @@ export const CATEGORIES: Category[] = [
   { slug: "vapes", name: { ru: "Вейпы", en: "Vapes" }, emoji: "💨", gradient: "gradient-grape" },
 ];
 
-/**
- * Build demo variants for a product available in the given cities.
- * - Variants: 1g/2g/5g
- * - Price scales by grams; differs per country
- * - Each variant available in the first 2 districts of each listed city
- */
 const buildDemoVariants = (cities: string[], basePrice: number): ProductVariant[] => {
   const countryPriceFactor: Record<string, number> = {
     thailand: 1,
@@ -23,7 +17,6 @@ const buildDemoVariants = (cities: string[], basePrice: number): ProductVariant[
     kl: 1.2,
   };
 
-  // Map cities → countries that contain at least one of those cities
   const countriesUsed = new Set<string>();
   const districtsByCity = new Map<string, string[]>();
   for (const country of COUNTRIES) {
@@ -31,32 +24,33 @@ const buildDemoVariants = (cities: string[], basePrice: number): ProductVariant[
       if (!cities.includes(city.slug)) continue;
       countriesUsed.add(country.slug);
       const ds = (city.districts ?? []).slice(0, 2).map((d) => d.slug);
-      // Cities without districts can still receive variants (no district filter applied)
       districtsByCity.set(city.slug, ds);
     }
   }
 
   const allDistricts = Array.from(districtsByCity.values()).flat();
+  const firstDistricts = Array.from(districtsByCity.values())
+    .map((ds) => ds[0])
+    .filter(Boolean);
 
+  const types: StashType[] = ["prikop", "klad", "magnit"];
   const grams = [1, 2, 5];
   return grams.map((g, idx) => {
     const pricesByCountry: Record<string, number> = {};
     for (const c of countriesUsed) {
       const factor = countryPriceFactor[c] ?? 1;
-      // Slight bulk discount per gram
       pricesByCountry[c] = Math.round(basePrice * g * factor * (1 - idx * 0.05));
     }
+    const districts = g === 1 ? allDistricts : firstDistricts;
+    const stashes: VariantStash[] = districts.map((d, i) => ({
+      districtSlug: d,
+      type: types[i % types.length],
+    }));
     return {
       id: `${g}g`,
       grams: g,
       pricesByCountry,
-      // Smaller pack available everywhere; bigger pack only first district per city
-      districts:
-        g === 1
-          ? allDistricts
-          : Array.from(districtsByCity.values())
-              .map((ds) => ds[0])
-              .filter(Boolean),
+      stashes,
     };
   });
 };
