@@ -11,6 +11,8 @@ import { LocationPicker } from "@/components/shop/LocationPicker";
 import { ProductSheet } from "@/components/shop/ProductSheet";
 import { DepositPage } from "@/components/shop/DepositPage";
 import { AccountPage } from "@/components/shop/AccountPage";
+import { SubscriptionGate } from "@/components/shop/SubscriptionGate";
+import { useSubscription } from "@/store/subscription";
 import { useTelegram } from "@/lib/telegram";
 import { useI18n, useT } from "@/lib/i18n";
 import { useLocation } from "@/store/location";
