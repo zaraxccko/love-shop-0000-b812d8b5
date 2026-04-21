@@ -1,16 +1,16 @@
 import { useMemo, useState } from "react";
-import { ChevronLeft, MapPin, Plus, X } from "lucide-react";
+import { ChevronLeft, MapPin, Package, Plus, X } from "lucide-react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import type { Product } from "@/types/shop";
+import type { Product, StashType } from "@/types/shop";
+import { STASH_TYPES } from "@/types/shop";
 import { useCart } from "@/store/cart";
 import { useLocation } from "@/store/location";
 import { useI18n } from "@/lib/i18n";
 import { loc } from "@/lib/loc";
 import { haptic } from "@/lib/telegram";
-import { COUNTRIES, findCity } from "@/data/locations";
+import { findCity } from "@/data/locations";
 import { cn } from "@/lib/utils";
 
-/** Spawns a flying product image (or emoji fallback) from the button to the cart icon in the header. */
 const flyToCart = (sourceEl: HTMLElement, imageUrl: string | undefined, emoji: string) => {
   const target = document.querySelector<HTMLElement>("[data-cart-target]");
   if (!target) return;
@@ -67,59 +67,102 @@ interface ProductSheetProps {
   onOpenChange: (open: boolean) => void;
 }
 
+interface PendingAdd {
+  variantId: string;
+  grams: number;
+  price: number;
+  districtSlug: string;
+  triggerEl: HTMLElement;
+}
+
 export const ProductSheet = ({ product, onOpenChange }: ProductSheetProps) => {
   const lang = useI18n((s) => s.lang) ?? "ru";
   const citySlug = useLocation((s) => s.city);
   const add = useCart((s) => s.add);
   const [districtSlug, setDistrictSlug] = useState<string | null>(null);
+  const [pending, setPending] = useState<PendingAdd | null>(null);
 
-  // Reset selected district whenever the sheet (re)opens with a product
   const productId = product?.id;
   useMemo(() => {
     setDistrictSlug(null);
+    setPending(null);
   }, [productId]);
 
   const cityInfo = citySlug ? findCity(citySlug) : null;
   const country = cityInfo?.country;
   const city = cityInfo?.city;
 
-  // Variants of this product available in the current city
+  // Helper: stashes of a variant (normalised — supports legacy `districts`)
+  const variantStashes = (v: NonNullable<Product["variants"]>[number]) => {
+    if (v.stashes && v.stashes.length) return v.stashes;
+    if (v.districts && v.districts.length) {
+      return v.districts.map((d) => ({ districtSlug: d, type: "prikop" as StashType }));
+    }
+    return [];
+  };
+
+  // Variants of this product available in the current city (have price + at least one stash in city)
   const variantsInCity = useMemo(() => {
     if (!product || !country) return [];
     return (product.variants ?? []).filter((v) => {
-      // Has price for this country
       if (!v.pricesByCountry?.[country.slug]) return false;
-      // If the city has districts, variant must list at least one district of this city
       if (city?.districts && city.districts.length > 0) {
         const cityDistrictSlugs = new Set(city.districts.map((d) => d.slug));
-        return (v.districts ?? []).some((d) => cityDistrictSlugs.has(d));
+        return variantStashes(v).some((s) => cityDistrictSlugs.has(s.districtSlug));
       }
       return true;
     });
   }, [product, country, city]);
 
-  // Districts in this city that have at least one variant available
+  // Districts of the current city that have at least one stash
   const availableDistricts = useMemo(() => {
     if (!city?.districts || !product) return [];
     return city.districts.filter((d) =>
-      variantsInCity.some((v) => v.districts?.includes(d.slug))
+      variantsInCity.some((v) => variantStashes(v).some((s) => s.districtSlug === d.slug))
     );
   }, [city, variantsInCity, product]);
 
   // Variants available in the chosen district
   const variantsInDistrict = useMemo(() => {
     if (!districtSlug) return [];
-    return variantsInCity.filter((v) => v.districts?.includes(districtSlug));
+    return variantsInCity.filter((v) =>
+      variantStashes(v).some((s) => s.districtSlug === districtSlug)
+    );
   }, [districtSlug, variantsInCity]);
 
   if (!product) return null;
   const name = loc(product.name, lang);
   const description = loc(product.description, lang);
 
-  // City has no districts → skip district step, show variants directly
   const skipDistrictStep = !city?.districts || city.districts.length === 0;
   const effectiveVariants = skipDistrictStep ? variantsInCity : variantsInDistrict;
   const showDistrictPicker = !skipDistrictStep && !districtSlug;
+
+  // Available stash types for the pending add
+  const pendingTypes: StashType[] = pending
+    ? (() => {
+        const v = product.variants?.find((x) => x.id === pending.variantId);
+        if (!v) return [];
+        const seen = new Set<StashType>();
+        for (const s of variantStashes(v)) {
+          if (s.districtSlug === pending.districtSlug) seen.add(s.type);
+        }
+        return STASH_TYPES.map((t) => t.value).filter((t) => seen.has(t));
+      })()
+    : [];
+
+  const confirmAdd = (type: StashType) => {
+    if (!pending) return;
+    haptic("medium");
+    flyToCart(pending.triggerEl, product.imageUrl, product.emoji);
+    add(product, {
+      variantId: pending.variantId,
+      districtSlug: pending.districtSlug,
+      stashType: type,
+      priceUSD: pending.price,
+    });
+    setPending(null);
+  };
 
   return (
     <Sheet open={!!product} onOpenChange={onOpenChange}>
@@ -127,7 +170,6 @@ export const ProductSheet = ({ product, onOpenChange }: ProductSheetProps) => {
         side="bottom"
         className="rounded-t-3xl border-0 p-0 max-h-[90vh] flex flex-col bg-background [&>button.absolute]:hidden"
       >
-        {/* Top image */}
         <div
           className={cn(
             "aspect-[16/9] relative flex items-center justify-center overflow-hidden rounded-t-3xl",
@@ -175,9 +217,7 @@ export const ProductSheet = ({ product, onOpenChange }: ProductSheetProps) => {
               </div>
               {availableDistricts.length === 0 ? (
                 <div className="py-8 text-center text-muted-foreground text-sm">
-                  {lang === "ru"
-                    ? "Нет в наличии в вашем городе."
-                    : "Not available in your city."}
+                  {lang === "ru" ? "Нет в наличии в вашем городе." : "Not available in your city."}
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-2">
@@ -193,13 +233,16 @@ export const ProductSheet = ({ product, onOpenChange }: ProductSheetProps) => {
                       <div className="font-semibold text-sm">{d.name[lang]}</div>
                       <div className="text-[11px] text-muted-foreground mt-0.5">
                         {(() => {
-                          const n = variantsInCity.filter((v) => v.districts?.includes(d.slug)).length;
+                          const n = variantsInCity.filter((v) =>
+                            variantStashes(v).some((s) => s.districtSlug === d.slug)
+                          ).length;
                           if (lang === "ru") {
                             const mod10 = n % 10;
                             const mod100 = n % 100;
                             let word = "вариантов";
                             if (mod10 === 1 && mod100 !== 11) word = "вариант";
-                            else if ([2, 3, 4].includes(mod10) && ![12, 13, 14].includes(mod100)) word = "варианта";
+                            else if ([2, 3, 4].includes(mod10) && ![12, 13, 14].includes(mod100))
+                              word = "варианта";
                             return `${n} ${word}`;
                           }
                           return `${n} ${n === 1 ? "option" : "options"}`;
@@ -233,6 +276,13 @@ export const ProductSheet = ({ product, onOpenChange }: ProductSheetProps) => {
                   .sort((a, b) => a.grams - b.grams)
                   .map((v) => {
                     const price = country ? v.pricesByCountry?.[country.slug] ?? 0 : 0;
+                    // available stash types for this district
+                    const dSlug = districtSlug ?? variantStashes(v)[0]?.districtSlug ?? "";
+                    const typesHere = new Set(
+                      variantStashes(v)
+                        .filter((s) => s.districtSlug === dSlug)
+                        .map((s) => s.type)
+                    );
                     return (
                       <div
                         key={v.id}
@@ -247,16 +297,43 @@ export const ProductSheet = ({ product, onOpenChange }: ProductSheetProps) => {
                               🎁 +5g Free
                             </span>
                           )}
+                          {typesHere.size > 0 && (
+                            <div className="w-full flex flex-wrap gap-1 mt-1">
+                              {STASH_TYPES.filter((t) => typesHere.has(t.value)).map((t) => (
+                                <span
+                                  key={t.value}
+                                  className="text-[10px] bg-muted rounded-full px-2 py-0.5 text-muted-foreground"
+                                >
+                                  {t.emoji} {t.label[lang]}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </div>
                         <button
                           onClick={(e) => {
-                            haptic("medium");
-                            flyToCart(e.currentTarget, product.imageUrl, product.emoji);
-                            add(product, {
-                              variantId: v.id,
-                              districtSlug: districtSlug ?? undefined,
-                              priceUSD: price,
-                            });
+                            const trigger = e.currentTarget;
+                            haptic("light");
+                            // If only one type available — add directly. Otherwise show picker.
+                            if (typesHere.size === 1) {
+                              const onlyType = Array.from(typesHere)[0];
+                              haptic("medium");
+                              flyToCart(trigger, product.imageUrl, product.emoji);
+                              add(product, {
+                                variantId: v.id,
+                                districtSlug: dSlug,
+                                stashType: onlyType,
+                                priceUSD: price,
+                              });
+                            } else {
+                              setPending({
+                                variantId: v.id,
+                                grams: v.grams,
+                                price,
+                                districtSlug: dSlug,
+                                triggerEl: trigger,
+                              });
+                            }
                           }}
                           className="h-9 px-4 rounded-full gradient-primary text-primary-foreground font-bold text-sm flex items-center gap-1 shadow-glow active:scale-95"
                         >
@@ -270,6 +347,49 @@ export const ProductSheet = ({ product, onOpenChange }: ProductSheetProps) => {
             </div>
           )}
         </div>
+
+        {/* Stash type picker overlay */}
+        {pending && (
+          <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-30 flex items-end">
+            <div className="w-full bg-card rounded-t-3xl p-5 shadow-card animate-in slide-in-from-bottom">
+              <div className="w-12 h-1.5 rounded-full bg-muted mx-auto mb-4" />
+              <div className="flex items-center gap-2 mb-1">
+                <Package className="w-4 h-4 text-primary" />
+                <h3 className="font-display font-bold text-lg">
+                  {lang === "ru" ? "Тип закладки" : "Stash type"}
+                </h3>
+              </div>
+              <p className="text-xs text-muted-foreground mb-4">
+                {pending.grams}g ·{" "}
+                {city?.districts?.find((d) => d.slug === pending.districtSlug)?.name[lang]}
+              </p>
+              <div className="grid grid-cols-1 gap-2">
+                {pendingTypes.map((tv) => {
+                  const meta = STASH_TYPES.find((t) => t.value === tv)!;
+                  return (
+                    <button
+                      key={tv}
+                      onClick={() => confirmAdd(tv)}
+                      className="bg-background rounded-2xl p-3 flex items-center gap-3 active:scale-[0.98] shadow-card"
+                    >
+                      <span className="text-2xl">{meta.emoji}</span>
+                      <span className="font-semibold text-sm flex-1 text-left">
+                        {meta.label[lang]}
+                      </span>
+                      <Plus className="w-4 h-4 text-primary" strokeWidth={3} />
+                    </button>
+                  );
+                })}
+              </div>
+              <button
+                onClick={() => setPending(null)}
+                className="w-full mt-3 text-sm text-muted-foreground py-2 active:scale-95"
+              >
+                {lang === "ru" ? "Отмена" : "Cancel"}
+              </button>
+            </div>
+          </div>
+        )}
       </SheetContent>
     </Sheet>
   );
