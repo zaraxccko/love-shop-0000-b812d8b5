@@ -44,7 +44,7 @@ export const CartSheet = ({ open, onOpenChange, onCheckout }: CartSheetProps) =>
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className="rounded-t-3xl border-0 p-0 max-h-[90vh] flex flex-col bg-background"
+        className="rounded-t-3xl border-0 p-0 h-[90vh] flex flex-col bg-background"
       >
         <SheetHeader className="px-5 pt-4 pb-2">
           <div className="w-12 h-1.5 rounded-full bg-muted mx-auto mb-3" />
@@ -150,7 +150,7 @@ export const CartSheet = ({ open, onOpenChange, onCheckout }: CartSheetProps) =>
         </div>
 
         {lines.length > 0 && (
-          <div className="px-5 pt-3 pb-6 border-t border-border bg-card">
+          <div className="px-5 pt-3 pb-6 border-t border-border bg-card max-h-[60vh] overflow-y-auto">
             <button
               type="button"
               onClick={() => {
