@@ -21,11 +21,24 @@ export interface Category {
   gradient: string;
 }
 
+/** A weight-based variant of a product (e.g. 1g, 2g, 5g). */
+export interface ProductVariant {
+  /** Unique id within the product, e.g. "1g". */
+  id: string;
+  /** Weight in grams. */
+  grams: number;
+  /** Price per country slug ("thailand", "vietnam", "bali", "kl"). */
+  pricesByCountry: Partial<Record<string, number>>;
+  /** District slugs where this variant is available. Empty = all districts of the product's cities. */
+  districts?: string[];
+}
+
 export interface Product {
   id: string;
   name: LocalizedString;
   description: LocalizedString;
   category: string;
+  /** @deprecated kept for backward compatibility — use variants[].pricesByCountry */
   priceTHB: number;
   thcMg?: number;
   cbdMg?: number;
@@ -40,6 +53,8 @@ export interface Product {
   cities?: string[];
   /** district slugs where product is available; empty = all districts of selected cities */
   districts?: string[];
+  /** weight-based variants with per-country prices */
+  variants?: ProductVariant[];
 }
 
 export interface CartLine {
