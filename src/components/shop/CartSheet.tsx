@@ -203,6 +203,11 @@ export const CartSheet = ({ open, onOpenChange, onCheckout }: CartSheetProps) =>
                   }
                   className="w-full resize-none rounded-2xl bg-background border border-border px-3 py-2.5 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                 />
+                <div className="text-[11px] text-muted-foreground rounded-xl bg-background border border-border px-3 py-2 leading-snug">
+                  {lang === "ru"
+                    ? "✈️ Курьер свяжется с вами в Telegram за 10 минут до приезда."
+                    : "✈️ The courier will contact you on Telegram 10 minutes before arrival."}
+                </div>
               </div>
             )}
 
