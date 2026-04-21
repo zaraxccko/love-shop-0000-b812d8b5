@@ -239,6 +239,44 @@ const AdminPage = ({ onExit }: AdminPageProps) => {
             <Plus className="w-4 h-4 mr-1" /> {t("admin.add")}
           </Button>
 
+          {activeCity?.districts && activeCity.districts.length > 0 && (
+            <div className="bg-card rounded-2xl p-3 shadow-card space-y-3">
+              <div className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                Районы города
+              </div>
+              {activeCity.districts.map((d) => {
+                const items = visibleProducts.filter(
+                  (p) =>
+                    !p.districts ||
+                    p.districts.length === 0 ||
+                    p.districts.includes(d.slug)
+                );
+                return (
+                  <div key={d.slug} className="border-t pt-2 first:border-t-0 first:pt-0">
+                    <div className="flex items-center justify-between">
+                      <div className="font-semibold text-sm">{d.name.ru}</div>
+                      <span className="text-[11px] text-muted-foreground">
+                        {items.length} товаров
+                      </span>
+                    </div>
+                    {items.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1.5">
+                        {items.map((p) => (
+                          <span
+                            key={p.id}
+                            className="text-[11px] bg-muted rounded-full px-2 py-0.5"
+                          >
+                            {p.emoji} {loc(p.name, "ru")}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
           {visibleProducts.length === 0 ? (
             <div className="py-10 text-center text-muted-foreground text-sm">
               {t("admin.noProducts")}
