@@ -12,7 +12,13 @@ export const CRYPTO_LIST: { code: CryptoCode; name: string; network: string; add
   { code: "TON",  name: "Toncoin", network: "TON",    address: "UQAexampleTONaddressxxxxxxxxxxxxxx" },
 ];
 
-export type DepositStatus = "pending" | "confirmed" | "cancelled";
+/**
+ * pending     — заявка создана, юзер ещё не нажал "Я оплатил"
+ * awaiting    — юзер заявил об оплате, ждём подтверждения админа
+ * confirmed   — админ подтвердил, баланс пополнен
+ * cancelled   — отменено
+ */
+export type DepositStatus = "pending" | "awaiting" | "confirmed" | "cancelled";
 
 export interface Deposit {
   id: string;
@@ -21,6 +27,7 @@ export interface Deposit {
   crypto: CryptoCode;
   address: string;
   status: DepositStatus;
+  paidAt?: string;
   confirmedAt?: string;
 }
 
