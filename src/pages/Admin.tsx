@@ -593,7 +593,20 @@ const AdminPage = ({ onExit }: AdminPageProps) => {
             <Button
               onClick={() => {
                 if (editingC) {
-                  upsertCategory(editingC);
+                  const slugify = (s: string) =>
+                    s
+                      .toLowerCase()
+                      .trim()
+                      .replace(/[^a-z0-9]+/g, "-")
+                      .replace(/^-+|-+$/g, "");
+                  const enName = getLang(editingC.name, "en");
+                  const ruName = getLang(editingC.name, "ru");
+                  const autoSlug =
+                    slugify(enName) || slugify(ruName) || `cat-${Date.now().toString(36)}`;
+                  const slug = editingC.slug?.startsWith("cat_") || !editingC.slug
+                    ? autoSlug
+                    : editingC.slug;
+                  upsertCategory({ ...editingC, slug });
                   setEditingC(null);
                 }
               }}
