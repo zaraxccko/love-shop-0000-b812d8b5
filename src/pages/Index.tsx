@@ -86,13 +86,6 @@ const Index = () => {
             </div>
           )}
 
-          <Link
-            to="/admin"
-            className="mt-6 mb-2 flex items-center justify-center gap-2 text-xs text-muted-foreground py-3"
-          >
-            <Settings className="w-3.5 h-3.5" />
-            {t("admin.openAdmin")}
-          </Link>
         </section>
       </main>
 
