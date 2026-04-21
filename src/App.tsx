@@ -18,7 +18,8 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/admin" element={<AdminGate><AdminPage /></AdminGate>} />
+          {/* Hidden admin route — accessible only via 7-tap gesture on the logo */}
+          <Route path="/_lsadmin_x9k2" element={<AdminGate><AdminPage /></AdminGate>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

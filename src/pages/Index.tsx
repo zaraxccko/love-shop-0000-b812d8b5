@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+
 import { Header } from "@/components/shop/Header";
 import { Hero } from "@/components/shop/Hero";
 import { CategoryPills } from "@/components/shop/CategoryPills";
@@ -12,7 +12,7 @@ import { useTelegram } from "@/lib/telegram";
 import { useI18n, useT } from "@/lib/i18n";
 import { useLocation } from "@/store/location";
 import { useCatalog } from "@/store/catalog";
-import { Settings } from "lucide-react";
+
 
 const Index = () => {
   useTelegram();
@@ -86,13 +86,6 @@ const Index = () => {
             </div>
           )}
 
-          <Link
-            to="/admin"
-            className="mt-6 mb-2 flex items-center justify-center gap-2 text-xs text-muted-foreground py-3"
-          >
-            <Settings className="w-3.5 h-3.5" />
-            {t("admin.openAdmin")}
-          </Link>
         </section>
       </main>
 
