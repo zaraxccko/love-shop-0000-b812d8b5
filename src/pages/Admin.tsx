@@ -1032,10 +1032,15 @@ const AdminPage = ({ onExit }: AdminPageProps) => {
 
 const DepositsTab = () => {
   const orders = useAccount((s) => s.orders);
+  const deposits = useAccount((s) => s.deposits);
   const confirmOrder = useAccount((s) => s.confirmOrder);
   const cancelOrder = useAccount((s) => s.cancelOrder);
+  const confirmDeposit = useAccount((s) => s.confirmDeposit);
+  const cancelDeposit = useAccount((s) => s.cancelDeposit);
 
   const awaitingOrders = orders.filter((o) => o.status === "awaiting");
+  const awaitingDeposits = deposits.filter((d) => d.status === "awaiting");
+  const historyDeposits = deposits.filter((d) => d.status === "confirmed" || d.status === "cancelled");
 
   const [confirmTarget, setConfirmTarget] = useState<OrderRecord | null>(null);
   const [photo, setPhoto] = useState<string>("");
