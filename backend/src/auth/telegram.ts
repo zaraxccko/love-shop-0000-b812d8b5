@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import { env } from "./env.js";
+import { env } from "../env.js";
 
 export interface TelegramUser {
   id: number;
@@ -53,5 +53,5 @@ export function validateInitData(initData: string): TelegramUser | null {
 }
 
 export function isAdminTgId(tgId: bigint): boolean {
-  return env.adminTgIds.some((id) => id === tgId);
+  return env.adminTgIds.some((id: bigint) => id === tgId);
 }
