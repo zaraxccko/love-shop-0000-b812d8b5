@@ -70,6 +70,16 @@ export const Header = ({ onCartClick, onLocationClick, showAdminButton, onAdminC
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
+          {import.meta.env.DEV && (
+            <button
+              onClick={resetSubscription}
+              className="h-11 px-3 rounded-2xl bg-card shadow-card flex items-center justify-center active:scale-95 transition-[var(--transition-base)]"
+              aria-label="Reset subscription"
+              title="Сбросить подписку (DEV)"
+            >
+              <RotateCcw className="w-5 h-5 text-destructive" />
+            </button>
+          )}
           {showAdminButton && (
             <button
               onClick={() => {
