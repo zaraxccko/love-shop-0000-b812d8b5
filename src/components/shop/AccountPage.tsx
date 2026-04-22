@@ -70,7 +70,6 @@ export const AccountPage = ({ onBack, onTopUp, onOpenCart, onOpenActiveOrder }: 
     : user?.username
       ? `@${user.username}`
       : tr("Гость", "Guest");
-  const handle = user?.username ? `@${user.username}` : null;
   const initials = (user?.first_name?.[0] ?? user?.username?.[0] ?? "G").toUpperCase();
 
   return (
@@ -102,13 +101,9 @@ export const AccountPage = ({ onBack, onTopUp, onOpenCart, onOpenActiveOrder }: 
           )}
           <div className="flex-1 min-w-0">
             <div className="font-bold truncate">{displayName}</div>
-            {handle ? (
-              <div className="text-[11px] text-muted-foreground truncate">{handle}</div>
-            ) : (
-              <div className="text-[11px] text-muted-foreground">
-                {user?.id ? `Telegram ID: ${user.id}` : tr("Не из Telegram", "Not from Telegram")}
-              </div>
-            )}
+            <div className="text-[11px] text-muted-foreground">
+              {user?.id ? `Telegram ID: ${user.id}` : tr("Не из Telegram", "Not from Telegram")}
+            </div>
           </div>
         </section>
 
