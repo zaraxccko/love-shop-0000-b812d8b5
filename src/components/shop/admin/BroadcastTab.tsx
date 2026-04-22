@@ -145,7 +145,7 @@ export const BroadcastTab = () => {
 
         <div className="grid grid-cols-2 gap-2">
           <div className="min-w-0">
-            <Label className="text-xs">Текст кнопки</Label>
+            <Label className="text-xs h-4 flex items-center">Текст кнопки</Label>
             <Input
               value={btnText}
               onChange={(e) => setBtnText(e.target.value)}
@@ -154,7 +154,7 @@ export const BroadcastTab = () => {
             />
           </div>
           <div className="min-w-0">
-            <Label className="text-xs flex items-center gap-1">
+            <Label className="text-xs h-4 flex items-center gap-1">
               <LinkIcon className="w-3 h-3" /> URL
             </Label>
             <Input
