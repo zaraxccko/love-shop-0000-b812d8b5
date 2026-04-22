@@ -107,8 +107,18 @@ export const useAccount = create<AccountState>((set, get) => ({
       const dep = (await Deposits.create(amountUSD, crypto)) as Deposit;
       set((s) => ({ deposits: [dep, ...s.deposits] }));
       return dep;
-    } catch (e) {
-      toast.error("Не удалось создать заявку на пополнение");
+    } catch (e: any) {
+      // Не валим UX, если внешний платёжный шлюз недоступен —
+      // бэк всё равно создаёт pending-запись на статичный кошелёк.
+      const status = e?.status as number | undefined;
+      const code = e?.body?.error as string | undefined;
+      if (status === 401) {
+        toast.error("Сессия истекла — перезайдите через Telegram");
+      } else if (code === "gateway_unavailable") {
+        toast.message("Платёжный шлюз недоступен — заявка создана как pending");
+      } else {
+        toast.error("Не удалось создать заявку на пополнение");
+      }
       throw e;
     }
   },
