@@ -1334,7 +1334,7 @@ const DepositsTab = () => {
                 Пусто
               </div>
             ) : (
-              <div className="space-y-2">
+              <div className={`space-y-2 ${historyItems.length > 10 ? "max-h-[640px] overflow-y-auto pr-1 -mr-1" : ""}`}>
                 {historyItems.map((it) => (
                   <div key={`${it.kind}-${it.id}`} className="bg-card rounded-2xl p-3 shadow-card flex items-center justify-between gap-2">
                     <div className="min-w-0">
