@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { RefreshCw, ShieldCheck } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ShieldCheck } from "lucide-react";
 import { useCaptcha } from "@/store/captcha";
 import { useI18n } from "@/lib/i18n";
 import { haptic } from "@/lib/telegram";
@@ -91,10 +91,6 @@ export const CaptchaGate = () => {
     });
   }, [board]);
 
-  const refresh = () => {
-    haptic("light");
-    setBoard(buildBoard());
-  };
 
   const onCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (blocked) return;
@@ -175,21 +171,6 @@ export const CaptchaGate = () => {
         )}
       </div>
 
-      <button
-        onClick={refresh}
-        disabled={blocked}
-        className="mt-5 w-full bg-card border border-border font-bold py-4 rounded-2xl active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50"
-      >
-        <RefreshCw className="w-5 h-5" />
-        {tr("Перемешать", "Shuffle")}
-      </button>
-
-      <p className="text-[11px] text-muted-foreground mt-4 max-w-xs">
-        {tr(
-          "Это нужно, чтобы отсечь ботов. Картинки нарисованы на холсте — обычный скрипт их не прочитает.",
-          "This filters out bots. Images are drawn on canvas — scripts can't read them."
-        )}
-      </p>
     </div>
   );
 };
