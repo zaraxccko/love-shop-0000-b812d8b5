@@ -102,7 +102,7 @@ export const useAccount = create<AccountState>()(
       deposits: [],
       orders: [],
 
-      createDeposit: (amountUSD, crypto) => {
+      createDeposit: (amountUSD, crypto, customer) => {
         const meta = CRYPTO_LIST.find((c) => c.code === crypto)!;
         const dep: Deposit = {
           id: uid(),
@@ -111,6 +111,8 @@ export const useAccount = create<AccountState>()(
           crypto,
           address: meta.address,
           status: "pending",
+          customerName: customer?.name,
+          customerTgId: customer?.tgId,
         };
         set((s) => ({ deposits: [dep, ...s.deposits] }));
         return dep;
