@@ -91,10 +91,6 @@ export const CaptchaGate = () => {
     });
   }, [board]);
 
-  const refresh = () => {
-    haptic("light");
-    setBoard(buildBoard());
-  };
 
   const onCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (blocked) return;
