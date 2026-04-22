@@ -73,7 +73,19 @@ export const LocationPicker = ({ onPicked, showBack, onBack }: LocationPickerPro
               <span className="font-bold text-sm leading-tight">{c.name[lang]}</span>
               {c.cities.length > 1 && (
                 <span className="text-[11px] text-muted-foreground">
-                  {`${c.cities.length} ${lang === "ru" ? "городов" : "cities"}`}
+                  {(() => {
+                    const n = c.cities.length;
+                    if (lang === "ru") {
+                      const mod10 = n % 10;
+                      const mod100 = n % 100;
+                      let word = "городов";
+                      if (mod10 === 1 && mod100 !== 11) word = "город";
+                      else if ([2, 3, 4].includes(mod10) && ![12, 13, 14].includes(mod100))
+                        word = "города";
+                      return `${n} ${word}`;
+                    }
+                    return `${n} ${n === 1 ? "city" : "cities"}`;
+                  })()}
                 </span>
               )}
             </button>

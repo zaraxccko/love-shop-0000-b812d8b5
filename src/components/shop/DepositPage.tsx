@@ -91,7 +91,8 @@ export const DepositPage = ({ onBack, onDone, suggested }: DepositPageProps) => 
               <div className="rounded-2xl border border-primary/30 bg-primary/5 px-4 py-3 text-sm">
                 {tr("Для оформления заказа не хватает ", "You need to add ")}
                 <span className="font-bold text-primary">{formatTHB(suggested)}</span>
-                {tr(".", " more.")}
+                {tr("", " more")}
+                {tr(".", ".")}
               </div>
             )}
 
