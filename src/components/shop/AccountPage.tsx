@@ -120,7 +120,7 @@ export const AccountPage = ({ onBack, onTopUp, onOpenCart, onOpenActiveOrder }: 
               <ShoppingBag className="w-4 h-4" /> {tr("Активный заказ", "Active order")}
             </div>
             {cartLines.length > 0 && (
-              <button onClick={onOpenCart} className="text-xs font-bold text-primary">
+              <button onClick={onOpenActiveOrder} className="text-xs font-bold text-primary">
                 {tr("Открыть", "Open")}
               </button>
             )}
@@ -131,7 +131,7 @@ export const AccountPage = ({ onBack, onTopUp, onOpenCart, onOpenActiveOrder }: 
             </div>
           ) : (
             <button
-              onClick={onOpenCart}
+              onClick={onOpenActiveOrder}
               className="w-full rounded-2xl bg-card shadow-card p-4 text-left active:scale-[0.99] space-y-2"
             >
               <div className="flex items-center justify-between">
