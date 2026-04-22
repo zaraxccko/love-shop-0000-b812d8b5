@@ -19,13 +19,27 @@ export interface DisplayCartLine extends CartLine {
 
 export const DELIVERY_FEE_USD = 20;
 
+/** Время резерва товаров в корзине (мс). */
+export const RESERVATION_MS = 30 * 60 * 1000;
+
+const newCartId = () =>
+  "ORD-" + Math.random().toString(36).slice(2, 8).toUpperCase();
+
 interface CityCart {
   lines: CartLine[];
   delivery: boolean;
   deliveryAddress: string;
+  cartId: string;
+  reservedAt: number;
 }
 
-const emptyCart = (): CityCart => ({ lines: [], delivery: false, deliveryAddress: "" });
+const emptyCart = (): CityCart => ({
+  lines: [],
+  delivery: false,
+  deliveryAddress: "",
+  cartId: newCartId(),
+  reservedAt: 0,
+});
 const activeKey = () => useLocation.getState().city ?? "__none__";
 
 interface CartState {
@@ -35,6 +49,8 @@ interface CartState {
   lines: CartLine[];
   delivery: boolean;
   deliveryAddress: string;
+  cartId: string;
+  reservedAt: number;
   setDeliveryAddress: (v: string) => void;
   setDelivery: (v: boolean) => void;
   toggleDelivery: () => void;
