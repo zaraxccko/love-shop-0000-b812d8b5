@@ -3,7 +3,7 @@ import { useCart } from "@/store/cart";
 import { haptic } from "@/lib/telegram";
 import { useI18n, useT } from "@/lib/i18n";
 import { useLocation } from "@/store/location";
-import { useSubscription } from "@/store/subscription";
+import { useCaptcha } from "@/store/captcha";
 import { findCity } from "@/data/locations";
 import { toast } from "sonner";
 import logo from "@/assets/logo.webp";
@@ -22,14 +22,12 @@ export const Header = ({ onCartClick, onLocationClick, showAdminButton, onAdminC
   const lang = useI18n((s) => s.lang) ?? "ru";
   const city = useLocation((s) => s.city);
   const found = city ? findCity(city) : null;
-  const setSubscribed = useSubscription((s) => s.setSubscribed);
-  const setForceGatePreview = useSubscription((s) => s.setForceGatePreview);
+  const resetCaptcha = useCaptcha((s) => s.reset);
 
-  const resetSubscription = () => {
+  const onResetCaptcha = () => {
     haptic("warning");
-    setSubscribed(false);
-    setForceGatePreview(true);
-    toast.success(lang === "ru" ? "Подписка сброшена" : "Subscription reset");
+    resetCaptcha();
+    toast.success(lang === "ru" ? "Капча сброшена" : "Captcha reset");
   };
 
   return (
@@ -74,10 +72,10 @@ export const Header = ({ onCartClick, onLocationClick, showAdminButton, onAdminC
         <div className="flex items-center gap-2 shrink-0">
           {import.meta.env.DEV && (
             <button
-              onClick={resetSubscription}
+              onClick={onResetCaptcha}
               className="h-11 px-3 rounded-2xl bg-card shadow-card flex items-center justify-center active:scale-95 transition-[var(--transition-base)]"
-              aria-label="Reset subscription"
-              title="Сбросить подписку (DEV)"
+              aria-label="Reset captcha"
+              title="Сбросить капчу (DEV)"
             >
               <RotateCcw className="w-5 h-5 text-destructive" />
             </button>
