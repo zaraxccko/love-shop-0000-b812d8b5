@@ -23,6 +23,7 @@ export const DepositPage = ({ onBack, onDone, suggested }: DepositPageProps) => 
   const createDeposit = useAccount((s) => s.createDeposit);
   const markPaid = useAccount((s) => s.markPaid);
   const cancelDeposit = useAccount((s) => s.cancelDeposit);
+  const { user } = useTelegram();
   void useAcc2((s) => s.deposits);
 
   const [amount, setAmount] = useState<number>(suggested && suggested > 0 ? Math.ceil(suggested) : 50);
@@ -37,7 +38,10 @@ export const DepositPage = ({ onBack, onDone, suggested }: DepositPageProps) => 
   const start = () => {
     if (amount < 1) return;
     haptic("medium");
-    const dep = createDeposit(amount, crypto);
+    const customerName = user?.first_name
+      ? `${user.first_name}${user.last_name ? " " + user.last_name : ""}${user.username ? ` (@${user.username})` : ""}`
+      : user?.username ? `@${user.username}` : undefined;
+    const dep = createDeposit(amount, crypto, { name: customerName, tgId: user?.id });
     setPendingId(dep.id);
   };
 
