@@ -53,5 +53,5 @@ export function validateInitData(initData: string): TelegramUser | null {
 }
 
 export function isAdminTgId(tgId: bigint): boolean {
-  return env.adminTgIds.some((id) => id === tgId);
+  return env.adminTgIds.some((id: bigint) => id === tgId);
 }
