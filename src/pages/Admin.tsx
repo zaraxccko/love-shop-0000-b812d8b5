@@ -1181,6 +1181,19 @@ const DepositsTab = () => {
                     </div>
                   )}
 
+                  {/* Информация об оплате (крипта + адрес) */}
+                  {o.crypto && (
+                    <div className="rounded-xl bg-background px-2.5 py-2 text-[11px] space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">Оплата</span>
+                        <span className="font-bold">{o.crypto} · ${o.totalUSD}</span>
+                      </div>
+                      {o.payAddress && (
+                        <div className="font-mono break-all text-foreground/70">{o.payAddress}</div>
+                      )}
+                    </div>
+                  )}
+
                   <div className="flex gap-2">
                     <button
                       onClick={() => { setConfirmTarget(o); setPhoto(""); setText(""); }}

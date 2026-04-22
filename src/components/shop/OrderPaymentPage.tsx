@@ -82,6 +82,8 @@ export const OrderPaymentPage = ({ onBack, onPaid }: OrderPaymentPageProps) => {
       status: "awaiting",
       customerName,
       customerTgId: user?.id,
+      crypto,
+      payAddress: cryptoMeta.address,
     });
     clearCart();
     toast.success(tr("Ждём подтверждения", "Waiting for confirmation"));
