@@ -67,6 +67,7 @@ const Index = () => {
   const cartAddress = useCart((s) => s.deliveryAddress);
   const clearCart = useCart((s) => s.clear);
   const subscribed = useSubscription((s) => s.subscribed);
+  const forceGatePreview = useSubscription((s) => s.forceGatePreview);
 
   const handleCheckout = () => {
     if (cartLines.length === 0) return;
@@ -139,7 +140,7 @@ const Index = () => {
 
   if (!lang) return <SplashLanguage onPicked={() => {}} />;
   // Subscription gate — admins skip it.
-  if (!isAdmin && !subscribed) return <SubscriptionGate />;
+  if ((!isAdmin || forceGatePreview) && !subscribed) return <SubscriptionGate />;
   if (!city || showLocPicker)
     return (
       <LocationPicker

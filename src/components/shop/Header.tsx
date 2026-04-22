@@ -23,10 +23,12 @@ export const Header = ({ onCartClick, onLocationClick, showAdminButton, onAdminC
   const city = useLocation((s) => s.city);
   const found = city ? findCity(city) : null;
   const setSubscribed = useSubscription((s) => s.setSubscribed);
+  const setForceGatePreview = useSubscription((s) => s.setForceGatePreview);
 
   const resetSubscription = () => {
     haptic("warning");
     setSubscribed(false);
+    setForceGatePreview(true);
     toast.success(lang === "ru" ? "Подписка сброшена" : "Subscription reset");
   };
 
