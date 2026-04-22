@@ -44,6 +44,7 @@ export const OrderPaymentPage = ({ onBack, onPaid }: OrderPaymentPageProps) => {
   const total = useMemo(() => totalFn(), [rawLines, delivery, totalFn]);
 
   const addOrder = useAccount((s) => s.addOrder);
+  const { user } = useTelegram();
 
   const [crypto, setCrypto] = useState<CryptoCode>("USDT");
   const cryptoMeta = useMemo(() => CRYPTO_LIST.find((c) => c.code === crypto)!, [crypto]);
