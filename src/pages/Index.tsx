@@ -113,13 +113,20 @@ const Index = () => {
     return products.filter((p) => {
       // Must allow this city
       if (p.cities && p.cities.length > 0 && !p.cities.includes(city)) return false;
-      // Must have at least one variant available in this city with a price for this country
       const variants = p.variants ?? [];
-      if (variants.length === 0) return false;
+      // No variants yet → show by city allowlist (freshly created products).
+      if (variants.length === 0) return true;
+      // Has variants → at least one must be priced for this country.
+      // If a variant has no district/stash info, treat it as available city-wide.
       return variants.some((v) => {
         if (!v.pricesByCountry?.[countrySlug]) return false;
+        const variantDistricts = [
+          ...(v.districts ?? []),
+          ...((v.stashes ?? []).map((s) => s.districtSlug)),
+        ];
+        if (variantDistricts.length === 0) return true;
         if (cityDistrictSlugs.size === 0) return true;
-        return (v.districts ?? []).some((d) => cityDistrictSlugs.has(d));
+        return variantDistricts.some((d) => cityDistrictSlugs.has(d));
       });
     });
   }, [products, city, cityInfo]);
