@@ -214,6 +214,27 @@ export const AccountPage = ({ onBack, onTopUp, onOpenCart, onOpenActiveOrder }: 
                         🚚 {tr("Доставка", "Delivery")}{o.deliveryAddress ? ` · ${o.deliveryAddress}` : ""}
                       </div>
                     )}
+                    {(o.confirmPhoto || o.confirmText) && (
+                      <div className="mt-2 rounded-xl bg-primary/5 border border-primary/20 p-2.5 space-y-2">
+                        <div className="text-[10px] font-bold uppercase tracking-wide text-primary">
+                          {tr("Сообщение от магазина", "Message from shop")}
+                        </div>
+                        {o.confirmPhoto && (
+                          <a href={o.confirmPhoto} target="_blank" rel="noreferrer" className="block">
+                            <img
+                              src={o.confirmPhoto}
+                              alt="confirm"
+                              className="w-full max-h-64 object-cover rounded-lg"
+                            />
+                          </a>
+                        )}
+                        {o.confirmText && (
+                          <div className="text-xs text-foreground/90 whitespace-pre-wrap">
+                            {o.confirmText}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 );
               })}
