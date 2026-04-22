@@ -47,7 +47,7 @@ export const Hero = ({ product, onClick }: HeroProps) => {
       )}
       <div className="relative">
         <div className="text-[11px] font-semibold uppercase tracking-widest text-foreground/70 mb-1 flex items-center gap-1">
-          <span>⭐</span> {t("hero.pickOfDay")}
+          <span>⭐</span> <span>{t("hero.pickOfDay")}</span>
         </div>
         <div className="font-display text-[20px] font-bold leading-tight text-foreground">
           {loc(product.name, lang)}
