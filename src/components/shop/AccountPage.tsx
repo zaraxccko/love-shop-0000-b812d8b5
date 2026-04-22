@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, Wallet, Plus, Package, Receipt, User as UserIcon, ShoppingBag, Clock } from "lucide-react";
+import { ArrowLeft, Wallet, Plus, Package, Receipt, User as UserIcon, ShoppingBag, Clock, ChevronDown } from "lucide-react";
 import { useAccount } from "@/store/account";
 import { useCart, RESERVATION_MS } from "@/store/cart";
 import { useI18n } from "@/lib/i18n";
@@ -43,6 +43,7 @@ export const AccountPage = ({ onBack, onTopUp, onOpenCart, onOpenActiveOrder }: 
   const clearCart = useCart((s) => s.clear);
 
   const [now, setNow] = useState(() => Date.now());
+  const [depositsOpen, setDepositsOpen] = useState(false);
   useEffect(() => {
     if (!reservedAt || cartLines.length === 0) return;
     const t = setInterval(() => setNow(Date.now()), 1000);
@@ -157,30 +158,41 @@ export const AccountPage = ({ onBack, onTopUp, onOpenCart, onOpenActiveOrder }: 
 
         {/* Deposits */}
         <section>
-          <div className="font-display font-bold text-lg mb-2 flex items-center gap-2">
-            <Receipt className="w-4 h-4" /> {tr("Пополнения", "Top-ups")}
-          </div>
-          {deposits.length === 0 ? (
-            <div className="rounded-2xl bg-card shadow-card p-4 text-sm text-muted-foreground text-center">
-              {tr("Пока нет пополнений", "No top-ups yet")}
+          <button
+            onClick={() => { haptic("light"); setDepositsOpen((v) => !v); }}
+            className="w-full flex items-center justify-between mb-2"
+          >
+            <div className="font-display font-bold text-lg flex items-center gap-2">
+              <Receipt className="w-4 h-4" /> {tr("Пополнения", "Top-ups")}
+              {deposits.length > 0 && (
+                <span className="text-[11px] font-bold text-muted-foreground">({deposits.length})</span>
+              )}
             </div>
-          ) : (
-            <div className="space-y-2">
-              {deposits.slice(0, 10).map((d) => {
-                const m = depStatusMeta[d.status];
-                return (
-                  <div key={d.id} className="rounded-2xl bg-card shadow-card p-3 flex items-center justify-between">
-                    <div className="min-w-0">
-                      <div className="font-bold">{formatTHB(d.amountUSD)} <span className="text-xs text-muted-foreground font-normal">· {d.crypto}</span></div>
-                      <div className="text-[11px] text-muted-foreground">{fmtDate(d.createdAt)}</div>
+            <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform ${depositsOpen ? "rotate-180" : ""}`} />
+          </button>
+          {depositsOpen && (
+            deposits.length === 0 ? (
+              <div className="rounded-2xl bg-card shadow-card p-4 text-sm text-muted-foreground text-center">
+                {tr("Пока нет пополнений", "No top-ups yet")}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {deposits.slice(0, 10).map((d) => {
+                  const m = depStatusMeta[d.status];
+                  return (
+                    <div key={d.id} className="rounded-2xl bg-card shadow-card p-3 flex items-center justify-between">
+                      <div className="min-w-0">
+                        <div className="font-bold">{formatTHB(d.amountUSD)} <span className="text-xs text-muted-foreground font-normal">· {d.crypto}</span></div>
+                        <div className="text-[11px] text-muted-foreground">{fmtDate(d.createdAt)}</div>
+                      </div>
+                      <span className={`text-[11px] font-bold rounded-full px-2.5 py-1 ${m.cls}`}>
+                        {m[lang]}
+                      </span>
                     </div>
-                    <span className={`text-[11px] font-bold rounded-full px-2.5 py-1 ${m.cls}`}>
-                      {m[lang]}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            )
           )}
         </section>
 
