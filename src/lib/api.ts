@@ -5,7 +5,15 @@
 // Базовый URL берётся из VITE_API_URL (см. .env.example).
 // ============================================================
 
-const BASE = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, "") || "/api";
+// Базовый URL API. Из .env (VITE_API_URL), по умолчанию "/api".
+// Гарантируем, что URL заканчивается на "/api" — Caddy ожидает этот префикс.
+function resolveBase(): string {
+  const raw = (import.meta.env.VITE_API_URL as string | undefined)?.trim();
+  if (!raw) return "/api";
+  const trimmed = raw.replace(/\/$/, "");
+  return /\/api$/i.test(trimmed) ? trimmed : `${trimmed}/api`;
+}
+const BASE = resolveBase();
 
 const TOKEN_KEY = "loveshop-token";
 
