@@ -26,13 +26,15 @@ interface CityCart {
 }
 
 const emptyCart = (): CityCart => ({ lines: [], delivery: false, deliveryAddress: "" });
-
-/** Active city key (fallback when no city selected). */
 const activeKey = () => useLocation.getState().city ?? "__none__";
 
 interface CartState {
-  /** Корзины, привязанные к городу (slug). */
+  /** Корзины по городам. */
   cartsByCity: Record<string, CityCart>;
+  /** Зеркало активной корзины (для удобной подписки в компонентах). */
+  lines: CartLine[];
+  delivery: boolean;
+  deliveryAddress: string;
   setDeliveryAddress: (v: string) => void;
   setDelivery: (v: boolean) => void;
   toggleDelivery: () => void;
@@ -44,36 +46,50 @@ interface CartState {
   subtotalUSD: () => number;
   totalTHB: () => number;
   linesWithGifts: () => DisplayCartLine[];
-  /** Текущая корзина для активного города (read-only helper). */
-  current: () => CityCart;
+  /** Пересинхронизировать зеркало с активным городом (вызывается при смене локации). */
+  _syncMirror: () => void;
 }
 
 const find5gVariant = (product: Product) =>
   product.variants?.find((v) => v.id === "5g" || v.grams === 5);
 
-/** Update the cart for the active city. */
-const updateCart = (
+/** Apply updater to active city's cart and return new state slice (incl. mirror). */
+const applyToActive = (
   state: CartState,
   updater: (cart: CityCart) => CityCart
-): Pick<CartState, "cartsByCity"> => {
+) => {
   const key = activeKey();
   const current = state.cartsByCity[key] ?? emptyCart();
-  return { cartsByCity: { ...state.cartsByCity, [key]: updater(current) } };
+  const next = updater(current);
+  return {
+    cartsByCity: { ...state.cartsByCity, [key]: next },
+    lines: next.lines,
+    delivery: next.delivery,
+    deliveryAddress: next.deliveryAddress,
+  };
 };
 
 export const useCart = create<CartState>()(
   persist(
     (set, get) => ({
       cartsByCity: {},
-      current: () => get().cartsByCity[activeKey()] ?? emptyCart(),
+      lines: [],
+      delivery: false,
+      deliveryAddress: "",
+      _syncMirror: () => {
+        const key = activeKey();
+        const c = get().cartsByCity[key] ?? emptyCart();
+        set({ lines: c.lines, delivery: c.delivery, deliveryAddress: c.deliveryAddress });
+      },
       setDeliveryAddress: (v) =>
-        set((s) => updateCart(s, (c) => ({ ...c, deliveryAddress: v }))),
-      setDelivery: (v) => set((s) => updateCart(s, (c) => ({ ...c, delivery: v }))),
+        set((s) => applyToActive(s, (c) => ({ ...c, deliveryAddress: v }))),
+      setDelivery: (v) =>
+        set((s) => applyToActive(s, (c) => ({ ...c, delivery: v }))),
       toggleDelivery: () =>
-        set((s) => updateCart(s, (c) => ({ ...c, delivery: !c.delivery }))),
+        set((s) => applyToActive(s, (c) => ({ ...c, delivery: !c.delivery }))),
       add: (product, opts) =>
         set((s) =>
-          updateCart(s, (c) => {
+          applyToActive(s, (c) => {
             const candidate: CartLine = {
               product,
               qty: 1,
@@ -97,7 +113,7 @@ export const useCart = create<CartState>()(
         ),
       remove: (key) =>
         set((s) =>
-          updateCart(s, (c) => {
+          applyToActive(s, (c) => {
             const lines = c.lines.filter((l) => lineKey(l) !== key);
             return lines.length === 0
               ? { lines, delivery: false, deliveryAddress: "" }
@@ -106,7 +122,7 @@ export const useCart = create<CartState>()(
         ),
       setQty: (key, qty) =>
         set((s) =>
-          updateCart(s, (c) => ({
+          applyToActive(s, (c) => ({
             ...c,
             lines:
               qty <= 0
@@ -114,24 +130,23 @@ export const useCart = create<CartState>()(
                 : c.lines.map((l) => (lineKey(l) === key ? { ...l, qty } : l)),
           }))
         ),
-      clear: () => set((s) => updateCart(s, () => emptyCart())),
-      totalQty: () => get().current().lines.reduce((s, l) => s + l.qty, 0),
+      clear: () => set((s) => applyToActive(s, () => emptyCart())),
+      totalQty: () => get().lines.reduce((s, l) => s + l.qty, 0),
       subtotalUSD: () =>
-        get().current().lines.reduce(
+        get().lines.reduce(
           (s, l) => s + l.qty * (l.priceUSD ?? l.product.priceTHB ?? 0),
           0
         ),
       totalTHB: () => {
-        const c = get().current();
-        const sub = c.lines.reduce(
+        const sub = get().lines.reduce(
           (s, l) => s + l.qty * (l.priceUSD ?? l.product.priceTHB ?? 0),
           0
         );
-        return sub + (c.delivery ? DELIVERY_FEE_USD : 0);
+        return sub + (get().delivery ? DELIVERY_FEE_USD : 0);
       },
       linesWithGifts: () => {
         const out: DisplayCartLine[] = [];
-        for (const l of get().current().lines) {
+        for (const l of get().lines) {
           out.push(l);
           const variant = l.product.variants?.find((v) => v.id === l.variantId);
           const grams = variant?.grams ?? 0;
@@ -153,8 +168,20 @@ export const useCart = create<CartState>()(
         return out;
       },
     }),
-    { name: "sweetleaf-cart-v2" }
+    {
+      name: "sweetleaf-cart-v2",
+      onRehydrateStorage: () => (state) => {
+        state?._syncMirror();
+      },
+    }
   )
 );
+
+// При смене города/страны — переключаем активную корзину.
+useLocation.subscribe((s, prev) => {
+  if (s.city !== prev.city) {
+    useCart.getState()._syncMirror();
+  }
+});
 
 export { lineKey };
