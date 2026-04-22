@@ -339,9 +339,6 @@ const AdminPage = ({ onExit }: AdminPageProps) => {
         <TabsList className="w-full flex-wrap h-auto gap-1">
           <TabsTrigger value="products" className="flex-1 min-w-[80px]">{t("admin.products")}</TabsTrigger>
           <TabsTrigger value="categories" className="flex-1 min-w-[80px]">{t("admin.categories")}</TabsTrigger>
-          <TabsTrigger value="deposits" className="flex-1 min-w-[80px]">Пополнения</TabsTrigger>
-          <TabsTrigger value="analytics" className="flex-1 min-w-[80px]">Аналитика</TabsTrigger>
-          <TabsTrigger value="broadcast" className="flex-1 min-w-[80px]">Рассылка</TabsTrigger>
         </TabsList>
 
         <DepositsTab />
