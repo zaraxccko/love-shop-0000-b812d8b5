@@ -174,9 +174,10 @@ export const ProductSheet = ({ product, onOpenChange }: ProductSheetProps) => {
       >
         <div
           className={cn(
-            "aspect-[16/9] relative flex items-center justify-center overflow-hidden rounded-t-3xl",
+            "relative w-full max-h-[45vh] aspect-square mx-auto flex items-center justify-center overflow-hidden rounded-t-3xl bg-muted",
             !product.imageUrl && product.gradient
           )}
+          style={{ maxWidth: "min(100%, 45vh)" }}
         >
           {product.imageUrl ? (
             <img src={product.imageUrl} alt={name} className="w-full h-full object-cover" />
