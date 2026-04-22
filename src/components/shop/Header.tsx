@@ -1,9 +1,11 @@
-import { ShoppingBag, MapPin, Shield, User as UserIcon } from "lucide-react";
+import { ShoppingBag, MapPin, Shield, User as UserIcon, RotateCcw } from "lucide-react";
 import { useCart } from "@/store/cart";
 import { haptic } from "@/lib/telegram";
 import { useI18n, useT } from "@/lib/i18n";
 import { useLocation } from "@/store/location";
+import { useSubscription } from "@/store/subscription";
 import { findCity } from "@/data/locations";
+import { toast } from "sonner";
 import logo from "@/assets/logo.webp";
 
 interface HeaderProps {
@@ -20,6 +22,13 @@ export const Header = ({ onCartClick, onLocationClick, showAdminButton, onAdminC
   const lang = useI18n((s) => s.lang) ?? "ru";
   const city = useLocation((s) => s.city);
   const found = city ? findCity(city) : null;
+  const setSubscribed = useSubscription((s) => s.setSubscribed);
+
+  const resetSubscription = () => {
+    haptic("warning");
+    setSubscribed(false);
+    toast.success(lang === "ru" ? "Подписка сброшена" : "Subscription reset");
+  };
 
   return (
     <header className="sticky top-0 z-30 px-5 pt-5 pb-3 bg-background/80 backdrop-blur-xl">
@@ -61,6 +70,16 @@ export const Header = ({ onCartClick, onLocationClick, showAdminButton, onAdminC
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
+          {import.meta.env.DEV && (
+            <button
+              onClick={resetSubscription}
+              className="h-11 px-3 rounded-2xl bg-card shadow-card flex items-center justify-center active:scale-95 transition-[var(--transition-base)]"
+              aria-label="Reset subscription"
+              title="Сбросить подписку (DEV)"
+            >
+              <RotateCcw className="w-5 h-5 text-destructive" />
+            </button>
+          )}
           {showAdminButton && (
             <button
               onClick={() => {
