@@ -153,6 +153,8 @@ export const useAccount = create<AccountState>()(
           deliveryAddress: o.deliveryAddress,
           customerName: o.customerName,
           customerTgId: o.customerTgId,
+          crypto: o.crypto,
+          payAddress: o.payAddress,
         };
         set((s) => ({ orders: [order, ...s.orders] }));
         return order;
