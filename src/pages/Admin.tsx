@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { Trash2, Pencil, Plus, RotateCcw, Eye, ChevronLeft, MapPin, Check, X } from "lucide-react";
+import { Trash2, Pencil, Plus, RotateCcw, Eye, ChevronLeft, MapPin, Check, X, Image as ImageIcon, Truck } from "lucide-react";
 import { useAuth } from "@/store/auth";
 import { useCatalog } from "@/store/catalog";
-import { useAccount } from "@/store/account";
+import { useAccount, type OrderRecord } from "@/store/account";
 import { useT } from "@/lib/i18n";
 import { loc } from "@/lib/loc";
-import { COUNTRIES } from "@/data/locations";
+import { COUNTRIES, findDistrict } from "@/data/locations";
 import type { Category, Product, LocalizedString, StashType, VariantStash } from "@/types/shop";
 import { STASH_TYPES } from "@/types/shop";
 import { Button } from "@/components/ui/button";
