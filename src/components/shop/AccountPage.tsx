@@ -98,21 +98,6 @@ export const AccountPage = ({ onBack, onTopUp, onOpenCart, onOpenActiveOrder }: 
           </div>
         </section>
 
-        {/* Balance */}
-        <section className="rounded-2xl gradient-primary text-primary-foreground p-5 shadow-glow">
-          <div className="flex items-center gap-2 text-xs opacity-80">
-            <Wallet className="w-4 h-4" />
-            {tr("Баланс", "Balance")}
-          </div>
-          <div className="font-display font-bold text-3xl mt-1">{formatTHB(balance)}</div>
-          <button
-            onClick={() => { haptic("medium"); onTopUp(); }}
-            className="mt-3 w-full bg-primary-foreground/15 hover:bg-primary-foreground/25 transition-colors rounded-xl py-2.5 font-bold text-sm flex items-center justify-center gap-2"
-          >
-            <Plus className="w-4 h-4" /> {tr("Пополнить", "Top up")}
-          </button>
-        </section>
-
         {/* Active cart */}
         <section>
           <div className="flex items-center justify-between mb-2">
@@ -152,35 +137,6 @@ export const AccountPage = ({ onBack, onTopUp, onOpenCart, onOpenActiveOrder }: 
                 </div>
               )}
             </button>
-          )}
-        </section>
-
-        {/* Deposits */}
-        <section>
-          <div className="font-display font-bold text-lg mb-2 flex items-center gap-2">
-            <Receipt className="w-4 h-4" /> {tr("Пополнения", "Top-ups")}
-          </div>
-          {deposits.length === 0 ? (
-            <div className="rounded-2xl bg-card shadow-card p-4 text-sm text-muted-foreground text-center">
-              {tr("Пока нет пополнений", "No top-ups yet")}
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {deposits.slice(0, 10).map((d) => {
-                const m = depStatusMeta[d.status];
-                return (
-                  <div key={d.id} className="rounded-2xl bg-card shadow-card p-3 flex items-center justify-between">
-                    <div className="min-w-0">
-                      <div className="font-bold">{formatTHB(d.amountUSD)} <span className="text-xs text-muted-foreground font-normal">· {d.crypto}</span></div>
-                      <div className="text-[11px] text-muted-foreground">{fmtDate(d.createdAt)}</div>
-                    </div>
-                    <span className={`text-[11px] font-bold rounded-full px-2.5 py-1 ${m.cls}`}>
-                      {m[lang]}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
           )}
         </section>
 
