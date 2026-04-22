@@ -25,8 +25,8 @@ export interface Category {
 export type StashType = "prikop" | "klad" | "magnit";
 
 export const STASH_TYPES: { value: StashType; label: { ru: string; en: string }; emoji: string }[] = [
-  { value: "prikop", label: { ru: "Прикоп", en: "Prikop" }, emoji: "🪨" },
-  { value: "klad", label: { ru: "Клад", en: "Klad" }, emoji: "📦" },
+  { value: "prikop", label: { ru: "Прикоп", en: "Buried treasure" }, emoji: "🪨" },
+  { value: "klad", label: { ru: "Тайник", en: "Dead drop" }, emoji: "📦" },
   { value: "magnit", label: { ru: "Магнит", en: "Magnet" }, emoji: "🧲" },
 ];
 
