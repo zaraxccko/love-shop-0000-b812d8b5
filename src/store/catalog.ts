@@ -108,7 +108,7 @@ export const useCatalog = create<CatalogState>()(
       reset: () => set({ categories: DEFAULT_CATEGORIES, products: DEFAULT_PRODUCTS, loaded: false }),
     }),
     {
-      name: "loveshop-catalog-v4",
+      name: "loveshop-catalog-v5",
       partialize: (s) => ({ categories: s.categories, products: s.products }),
       // Защита от повреждённого/устаревшего кэша.
       merge: (persisted: any, current) => {

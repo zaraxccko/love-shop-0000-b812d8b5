@@ -8,6 +8,7 @@ import { formatTHB } from "@/lib/format";
 import { loc } from "@/lib/loc";
 import { findDistrict } from "@/data/locations";
 import { STASH_TYPES } from "@/types/shop";
+import { CryptoAmountCard } from "@/components/shop/CryptoAmountCard";
 import { toast } from "sonner";
 
 interface OrderPaymentPageProps {
@@ -257,6 +258,13 @@ export const OrderPaymentPage = ({ onBack, onPaid }: OrderPaymentPageProps) => {
                 })}
               </div>
             </section>
+
+            {/* Crypto amount + копирование */}
+            <CryptoAmountCard
+              amountUSD={total}
+              crypto={crypto}
+              cryptoName={`${cryptoMeta.name} · ${cryptoMeta.network}`}
+            />
 
             {/* Wallet address */}
             <section className="rounded-2xl bg-card shadow-card p-4">

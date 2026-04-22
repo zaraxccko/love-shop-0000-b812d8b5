@@ -5,6 +5,7 @@ import { useAccount as useAcc2 } from "@/store/account";
 import { useI18n } from "@/lib/i18n";
 import { haptic, useTelegram } from "@/lib/telegram";
 import { formatTHB } from "@/lib/format";
+import { CryptoAmountCard } from "@/components/shop/CryptoAmountCard";
 import { toast } from "sonner";
 
 interface DepositPageProps {
@@ -187,18 +188,11 @@ export const DepositPage = ({ onBack, onDone, suggested }: DepositPageProps) => 
           </>
         ) : (
           <section className="space-y-4">
-            <div className="rounded-2xl bg-card shadow-card p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-xs text-muted-foreground">{tr("К оплате", "To pay")}</div>
-                  <div className="font-display font-bold text-2xl">{formatTHB(pending.amountUSD)}</div>
-                </div>
-                <div className="text-right">
-                  <div className="font-bold">{cryptoMeta.name}</div>
-                  <div className="text-[11px] text-muted-foreground">{tr("Сеть", "Network")}: {cryptoMeta.network}</div>
-                </div>
-              </div>
-            </div>
+            <CryptoAmountCard
+              amountUSD={pending.amountUSD}
+              crypto={pending.crypto as CryptoCode}
+              cryptoName={`${cryptoMeta.name} · ${cryptoMeta.network}`}
+            />
 
             <div className="rounded-2xl bg-card shadow-card p-4">
               <div className="text-xs text-muted-foreground mb-1">
