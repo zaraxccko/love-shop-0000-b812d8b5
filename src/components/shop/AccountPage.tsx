@@ -43,6 +43,7 @@ export const AccountPage = ({ onBack, onTopUp, onOpenCart, onOpenActiveOrder }: 
   const clearCart = useCart((s) => s.clear);
 
   const [now, setNow] = useState(() => Date.now());
+  const [depositsOpen, setDepositsOpen] = useState(false);
   useEffect(() => {
     if (!reservedAt || cartLines.length === 0) return;
     const t = setInterval(() => setNow(Date.now()), 1000);
