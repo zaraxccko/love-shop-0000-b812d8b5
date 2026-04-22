@@ -82,6 +82,8 @@ const applyToActive = (
     lines: next.lines,
     delivery: next.delivery,
     deliveryAddress: next.deliveryAddress,
+    cartId: next.cartId,
+    reservedAt: next.reservedAt,
   };
 };
 
