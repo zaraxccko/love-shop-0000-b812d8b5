@@ -1062,8 +1062,30 @@ const DepositsTab = () => {
     setText("");
   };
 
-  const fmt = (iso: string) =>
-    new Date(iso).toLocaleString("ru", { dateStyle: "short", timeStyle: "short" });
+  const fmt = (iso: string) => {
+    const d = new Date(iso);
+    const dd = String(d.getDate()).padStart(2, "0");
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const hh = String(d.getHours()).padStart(2, "0");
+    const mi = String(d.getMinutes()).padStart(2, "0");
+    return `${dd}.${mm}, ${hh}:${mi}`;
+  };
+
+  /** Объединяем одинаковые позиции (товар+вариант+район+закладка+isGift) в одну строку. */
+  const mergeItems = (items: OrderRecord["items"]) => {
+    const map = new Map<string, (typeof items)[number]>();
+    for (const l of items) {
+      const isGift = (l as { isGift?: boolean }).isGift === true;
+      const key = `${l.product.id}::${l.variantId ?? ""}::${l.districtSlug ?? ""}::${l.stashType ?? ""}::${isGift ? "g" : ""}`;
+      const existing = map.get(key);
+      if (existing) {
+        map.set(key, { ...existing, qty: existing.qty + l.qty });
+      } else {
+        map.set(key, { ...l });
+      }
+    }
+    return Array.from(map.values());
+  };
 
   const statusLabel: Record<string, string> = {
     pending: "Создана",
