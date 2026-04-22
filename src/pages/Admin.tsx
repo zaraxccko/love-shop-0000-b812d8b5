@@ -1254,9 +1254,9 @@ const DepositsTab = () => {
                 <div className="flex gap-2">
                   <button
                     onClick={() => confirmDeposit(d.id)}
-                    className="flex-1 gradient-primary text-primary-foreground font-bold py-2 rounded-xl flex items-center justify-center gap-1 active:scale-95"
+                    className="flex-1 gradient-primary text-primary-foreground font-bold text-xs py-2 px-2 rounded-xl flex items-center justify-center gap-1.5 active:scale-95"
                   >
-                    <Check className="w-4 h-4" /> Зачислить на баланс
+                    <Check className="w-4 h-4 shrink-0" /> <span>Зачислить</span>
                   </button>
                   <button
                     onClick={() => {
