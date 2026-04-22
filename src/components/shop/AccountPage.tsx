@@ -209,12 +209,15 @@ export const AccountPage = ({ onBack, onTopUp, onOpenCart, onOpenActiveOrder }: 
                 return (
                   <div key={o.id} className="rounded-2xl bg-card shadow-card p-3">
                     <div className="flex items-center justify-between">
-                      <div className="font-bold">{formatTHB(o.totalUSD)}</div>
+                      <div className="text-[11px] font-mono font-bold text-muted-foreground">#{o.id}</div>
                       <span className={`text-[11px] font-bold rounded-full px-2.5 py-1 ${m.cls}`}>
                         {m[lang]}
                       </span>
                     </div>
-                    <div className="text-[11px] text-muted-foreground mt-0.5">{fmtDate(o.createdAt)}</div>
+                    <div className="flex items-center justify-between mt-1">
+                      <div className="font-bold">{formatTHB(o.totalUSD)}</div>
+                      <div className="text-[11px] text-muted-foreground">{fmtDate(o.createdAt)}</div>
+                    </div>
                     <div className="mt-2 text-xs text-foreground/80 line-clamp-2">
                       {o.items.map((l) => `${loc(l.product.name, lang)}${l.variantId ? " · " + l.variantId : ""} × ${l.qty}`).join(" · ")}
                     </div>
