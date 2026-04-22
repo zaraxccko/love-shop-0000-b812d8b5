@@ -1,15 +1,12 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { isAdminTgId } from "./telegram.js";
 
-declare module "fastify" {
-  interface FastifyRequest {
-    user?: { tgId: bigint; isAdmin: boolean };
-  }
-}
+// NOTE: `request.user` shape is augmented in src/types/fastify-jwt.d.ts
+// via the @fastify/jwt FastifyJWT interface ({ tgId: bigint; isAdmin: boolean }).
 
 export async function requireAuth(req: FastifyRequest, reply: FastifyReply) {
   try {
-    const decoded = (await req.jwtVerify()) as unknown as { tgId: string | number };
+    const decoded = await req.jwtVerify<{ tgId: string }>();
     if (!decoded || typeof decoded !== "object" || !("tgId" in decoded)) {
       return reply.code(401).send({ error: "unauthorized" });
     }
