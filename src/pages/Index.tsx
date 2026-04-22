@@ -21,6 +21,7 @@ import { useCatalog } from "@/store/catalog";
 import { useAuth } from "@/store/auth";
 import { useAccount } from "@/store/account";
 import { useCart } from "@/store/cart";
+import { useSession } from "@/store/session";
 import { findCity } from "@/data/locations";
 import { toast } from "sonner";
 import type { Product } from "@/types/shop";
@@ -33,22 +34,29 @@ const Index = () => {
   const products = useCatalog((s) => s.products);
   const categories = useCatalog((s) => s.categories);
 
-  const { user } = useTelegram();
-  const { isAdmin, loginWithTelegram, logout } = useAuth();
+  const { user, tg } = useTelegram();
+  const { isAdmin } = useAuth();
+  const loginWithInitData = useSession((s) => s.loginWithInitData);
+  const refreshMe = useSession((s) => s.refreshMe);
+  const hydrateCatalog = useCatalog((s) => s.hydrate);
+  const hydrateAccount = useAccount((s) => s.hydrate);
 
-  // Auto-login admins by their Telegram ID. Non-whitelisted users never
-  // see anything admin-related — they get the regular shop.
-  // 🧪 In dev (browser preview without Telegram) we auto-login as the
-  //    primary admin ID so the shield button is visible for testing.
+  // ── Бутстрап сессии ────────────────────────────────────────────
+  // 1) Если запущены внутри Telegram WebApp — логинимся через initData.
+  // 2) Если уже есть сохранённый JWT — просто подтягиваем /me.
+  // 3) Если ни того, ни другого (превью в браузере) — пропускаем,
+  //    каталог продолжит работать в read-only режиме на mock-данных.
   useEffect(() => {
-    if (user?.id) {
-      loginWithTelegram(user.id);
+    const initData = tg?.initData;
+    if (initData) {
+      loginWithInitData(initData).then(() => {
+        hydrateAccount();
+      });
     } else {
-      // ⚠️ ВРЕМЕННО: автологин админа в превью (без Telegram).
-      // Убери эту ветку перед продакшеном.
-      loginWithTelegram(8044243116);
+      refreshMe().then(() => hydrateAccount());
     }
-  }, [user?.id, loginWithTelegram]);
+    hydrateCatalog();
+  }, [tg?.initData, loginWithInitData, refreshMe, hydrateCatalog, hydrateAccount]);
 
   const [category, setCategory] = useState<string>("all");
   const [cartOpen, setCartOpen] = useState(false);
@@ -61,7 +69,6 @@ const Index = () => {
   const [orderPayOpen, setOrderPayOpen] = useState(false);
 
   const balance = useAccount((s) => s.balanceUSD);
-  const spend = useAccount((s) => s.spend);
   const addOrder = useAccount((s) => s.addOrder);
   const cartLines = useCart((s) => s.lines);
   const cartTotal = useCart((s) => s.totalTHB());
@@ -70,7 +77,7 @@ const Index = () => {
   const clearCart = useCart((s) => s.clear);
   const captchaPassed = useCaptcha((s) => s.passed);
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (cartLines.length === 0) return;
     if (cartDelivery && !cartAddress.trim()) {
       toast.error(lang === "en" ? "Please enter delivery address" : "Укажите адрес доставки");
@@ -88,26 +95,29 @@ const Index = () => {
       );
       return;
     }
-    if (!spend(cartTotal)) {
-      toast.error(lang === "en" ? "Not enough balance" : "Недостаточно средств");
-      return;
-    }
     const customerName = user?.first_name
       ? `${user.first_name}${user.last_name ? " " + user.last_name : ""}${user.username ? ` (@${user.username})` : ""}`
       : user?.username ? `@${user.username}` : undefined;
-    addOrder({
-      totalUSD: cartTotal,
-      items: cartLines,
-      delivery: cartDelivery,
-      deliveryAddress: cartDelivery ? cartAddress : undefined,
-      status: "awaiting",
-      customerName,
-      customerTgId: user?.id,
-    });
-    clearCart();
-    setCartOpen(false);
-    toast.success(lang === "en" ? "Order placed!" : "Заказ оформлен!");
-    setShowAccount(true);
+    try {
+      await addOrder({
+        totalUSD: cartTotal,
+        items: cartLines,
+        delivery: cartDelivery,
+        deliveryAddress: cartDelivery ? cartAddress : undefined,
+        status: "awaiting",
+        customerName,
+        customerTgId: user?.id,
+      });
+      clearCart();
+      setCartOpen(false);
+      toast.success(lang === "en" ? "Order placed!" : "Заказ оформлен!");
+      setShowAccount(true);
+    } catch (e: any) {
+      const msg = e?.body?.error === "insufficient_balance"
+        ? (lang === "en" ? "Not enough balance" : "Недостаточно средств")
+        : (lang === "en" ? "Order failed" : "Не удалось оформить заказ");
+      toast.error(msg);
+    }
   };
 
   const cityInfo = city ? findCity(city) : null;

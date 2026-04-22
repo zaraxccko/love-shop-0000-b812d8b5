@@ -1,44 +1,17 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
-
 // ============================================================
-// 🔐 ДОСТУП В АДМИНКУ
+// 🔐 Тонкая обёртка над session — для обратной совместимости с UI.
+// Реальная авторизация: src/store/session.ts (через Telegram initData).
+// Whitelist админов теперь живёт на бэке (ADMIN_TG_IDS в .env).
 // ============================================================
-//
-// Вход в админку разрешён ТОЛЬКО пользователям, чей Telegram ID
-// указан в списке ниже. Никаких паролей — только whitelist.
-//
-// Узнать свой Telegram ID можно у бота @userinfobot.
-//
-// Добавляйте свои ID через запятую:
-//   const ADMIN_TELEGRAM_IDS: number[] = [123456789, 987654321];
-//
-const ADMIN_TELEGRAM_IDS: number[] = [
-  8044243116, // основной админ
-  8132405868, // второй админ
-];
+import { useSession } from "./session";
 
-// ============================================================
-
-interface AuthState {
-  isAdmin: boolean;
-  loginWithTelegram: (tgUserId?: number | null) => boolean;
-  logout: () => void;
-}
-
-export const useAuth = create<AuthState>()(
-  persist(
-    (set) => ({
-      isAdmin: false,
-      loginWithTelegram: (tgUserId) => {
-        if (tgUserId && ADMIN_TELEGRAM_IDS.includes(tgUserId)) {
-          set({ isAdmin: true });
-          return true;
-        }
-        return false;
-      },
-      logout: () => set({ isAdmin: false }),
-    }),
-    { name: "loveshop-auth" }
-  )
-);
+export const useAuth = () => {
+  const user = useSession((s) => s.user);
+  const logout = useSession((s) => s.logout);
+  return {
+    isAdmin: !!user?.isAdmin,
+    /** Заглушка для совместимости со старым кодом. Реальный вход — через session.loginWithInitData. */
+    loginWithTelegram: (_tgId?: number | null) => !!user?.isAdmin,
+    logout,
+  };
+};
