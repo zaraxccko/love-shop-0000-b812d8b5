@@ -138,10 +138,23 @@ export const AccountPage = ({ onBack, onOpenCart, onOpenActiveOrder }: AccountPa
 
   // ── Поддержка ────────────────────────────────────────────────
   const openSupport = () => {
+    haptic("light");
     const url = `https://t.me/${SUPPORT_USERNAME}`;
     const tgAny = tg as any;
-    if (tgAny?.openTelegramLink) tgAny.openTelegramLink(url);
-    else window.open(url, "_blank", "noopener,noreferrer");
+    try {
+      if (tgAny?.openTelegramLink) {
+        tgAny.openTelegramLink(url);
+        return;
+      }
+    } catch {}
+    // Fallback: работает и в iframe-превью, и в обычном браузере
+    const a = document.createElement("a");
+    a.href = url;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
   };
 
   return (
@@ -245,24 +258,6 @@ export const AccountPage = ({ onBack, onOpenCart, onOpenActiveOrder }: AccountPa
           )}
         </section>
 
-        {/* ── Поддержка ──────────────────────────────────────── */}
-        <section>
-          <button
-            onClick={openSupport}
-            className="w-full rounded-2xl bg-card shadow-card p-4 flex items-center gap-3 active:scale-[0.99]"
-          >
-            <div className="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
-              <MessageCircle className="w-5 h-5" />
-            </div>
-            <div className="flex-1 text-left">
-              <div className="font-bold text-sm">{tr("Поддержка", "Support")}</div>
-              <div className="text-[11px] text-muted-foreground">
-                {tr("Написать оператору в Telegram", "Message an operator on Telegram")}
-              </div>
-            </div>
-          </button>
-        </section>
-
         {/* ── История заказов ───────────────────────────────── */}
         <section>
           <div className="flex items-center justify-between mb-2">
@@ -348,6 +343,25 @@ export const AccountPage = ({ onBack, onOpenCart, onOpenActiveOrder }: AccountPa
               })}
             </div>
           )}
+        </section>
+
+        {/* ── Поддержка ──────────────────────────────────────── */}
+        <section>
+          <button
+            type="button"
+            onClick={openSupport}
+            className="w-full rounded-2xl bg-card shadow-card p-4 flex items-center gap-3 active:scale-[0.99]"
+          >
+            <div className="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+              <MessageCircle className="w-5 h-5" />
+            </div>
+            <div className="flex-1 text-left">
+              <div className="font-bold text-sm">{tr("Поддержка", "Support")}</div>
+              <div className="text-[11px] text-muted-foreground">
+                {tr("Написать оператору в Telegram", "Message an operator on Telegram")}
+              </div>
+            </div>
+          </button>
         </section>
       </main>
     </div>
