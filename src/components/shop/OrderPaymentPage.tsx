@@ -108,8 +108,6 @@ export const OrderPaymentPage = ({ onBack, onPaid }: OrderPaymentPageProps) => {
       const code = e?.body?.error;
       const msg = code === "order_already_submitted"
         ? tr("Заявка уже отправлена", "Order already submitted")
-        : code === "insufficient_balance"
-        ? tr("Недостаточно средств на балансе", "Not enough balance")
         : code === "delivery_address_required"
         ? tr("Укажите адрес доставки", "Enter delivery address")
         : code === "validation_failed"

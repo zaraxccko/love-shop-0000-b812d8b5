@@ -1049,11 +1049,7 @@ const DepositsTab = () => {
   const messageOrder = useAdminPanel((s) => s.messageOrder);
 
   const awaitingOrders = orders;
-  const historyDeposits: any[] = [];
-  const awaitingDeposits: any[] = [];
   void messageOrder;
-  void awaitingDeposits;
-  void historyDeposits;
 
   const [confirmTarget, setConfirmTarget] = useState<OrderRecord | null>(null);
   const [photo, setPhoto] = useState<string>("");

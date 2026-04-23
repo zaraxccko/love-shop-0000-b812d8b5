@@ -178,14 +178,6 @@ export const AnalyticsTab = () => {
         <FunnelRow label="Сделали 1-й заказ" value={a.funnel.firstOrder} total={a.funnel.starts} />
       </div>
 
-      {/* Deposits funnel */}
-      <div className="bg-card rounded-2xl shadow-card p-4 space-y-3">
-        <div className="font-bold text-sm">Воронка пополнений</div>
-        <FunnelRow label="Создано" value={a.depositsFunnel.created} total={a.depositsFunnel.created} />
-        <FunnelRow label="Оплачено" value={a.depositsFunnel.paid} total={a.depositsFunnel.created} />
-        <FunnelRow label="Подтверждено" value={a.depositsFunnel.confirmed} total={a.depositsFunnel.created} />
-      </div>
-
     </TabsContent>
   );
 };
