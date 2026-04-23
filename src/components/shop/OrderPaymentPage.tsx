@@ -69,26 +69,34 @@ export const OrderPaymentPage = ({ onBack, onPaid }: OrderPaymentPageProps) => {
   // (подарки покажутся отдельной плашкой внутри своей карточки).
   const realLines = lines.filter((l) => !l.isGift);
 
-  const handlePaid = () => {
+  const handlePaid = async () => {
     if (realLines.length === 0) return;
-    haptic("success");
     const customerName = user?.first_name
       ? `${user.first_name}${user.last_name ? " " + user.last_name : ""}${user.username ? ` (@${user.username})` : ""}`
       : user?.username ? `@${user.username}` : undefined;
-    addOrder({
-      totalUSD: total,
-      items: lines, // включая подарки — пусть в истории видно что было
-      delivery,
-      deliveryAddress: delivery ? deliveryAddress : undefined,
-      status: "awaiting",
-      customerName,
-      customerTgId: user?.id,
-      crypto,
-      payAddress: cryptoMeta.address,
-    });
-    clearCart();
-    toast.success(tr("Ждём подтверждения", "Waiting for confirmation"));
-    onPaid();
+    try {
+      await addOrder({
+        totalUSD: total,
+        items: lines,
+        delivery,
+        deliveryAddress: delivery ? deliveryAddress : undefined,
+        status: "awaiting",
+        customerName,
+        customerTgId: user?.id,
+        crypto,
+        payAddress: cryptoMeta.address,
+      });
+      haptic("success");
+      clearCart();
+      toast.success(tr("Ждём подтверждения", "Waiting for confirmation"));
+      onPaid();
+    } catch (e: any) {
+      haptic("error");
+      const msg = e?.body?.error === "insufficient_balance"
+        ? tr("Недостаточно средств", "Not enough balance")
+        : tr("Не удалось оформить заказ", "Failed to place order");
+      toast.error(msg);
+    }
   };
 
   return (
