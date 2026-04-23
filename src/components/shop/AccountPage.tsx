@@ -358,6 +358,44 @@ export const AccountPage = ({ onBack, onOpenCart, onOpenActiveOrder }: AccountPa
               </div>
             </div>
           </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              const tgAny = tg as any;
+              const httpsLink = `https://t.me/${SUPPORT_USERNAME}`;
+              const tgDeepLink = `tg://resolve?domain=${SUPPORT_USERNAME}`;
+              const results: string[] = [];
+              results.push(`WebApp v${tgAny?.version ?? "n/a"} · ${tgAny?.platform ?? "n/a"}`);
+              results.push(`openLink: ${typeof tgAny?.openLink === "function" ? "✓" : "✗"}`);
+              results.push(`openTelegramLink: ${typeof tgAny?.openTelegramLink === "function" ? "✓" : "✗"}`);
+
+              try {
+                if (tgAny?.openLink) {
+                  tgAny.openLink(tgDeepLink);
+                  results.push(`1) openLink(tg://) → OK`);
+                } else results.push(`1) openLink недоступен`);
+              } catch (e: any) {
+                results.push(`1) openLink(tg://) → ERR: ${e?.message ?? e}`);
+              }
+
+              setTimeout(() => {
+                try {
+                  if (tgAny?.openTelegramLink) {
+                    tgAny.openTelegramLink(httpsLink);
+                    results.push(`2) openTelegramLink(https) → OK`);
+                  } else results.push(`2) openTelegramLink недоступен`);
+                } catch (e: any) {
+                  results.push(`2) openTelegramLink → ERR: ${e?.message ?? e}`);
+                }
+                console.log("[support-debug]\n" + results.join("\n"));
+                toast.message("Debug ссылок", { description: results.join(" · ") });
+              }, 800);
+            }}
+            className="mt-2 w-full rounded-2xl bg-card shadow-card p-3 text-xs text-muted-foreground active:scale-[0.99]"
+          >
+            🔍 {tr("Проверить ссылки", "Test links")}
+          </button>
         </section>
       </main>
     </div>
