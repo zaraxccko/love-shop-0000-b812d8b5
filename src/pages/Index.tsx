@@ -9,7 +9,6 @@ import { StickyCartBar } from "@/components/shop/StickyCartBar";
 import { SplashLanguage } from "@/components/shop/SplashLanguage";
 import { LocationPicker } from "@/components/shop/LocationPicker";
 import { ProductSheet } from "@/components/shop/ProductSheet";
-import { DepositPage } from "@/components/shop/DepositPage";
 import { AccountPage } from "@/components/shop/AccountPage";
 import { OrderPaymentPage } from "@/components/shop/OrderPaymentPage";
 import { CaptchaGate } from "@/components/shop/CaptchaGate";
@@ -27,7 +26,7 @@ import { toast } from "sonner";
 import type { Product } from "@/types/shop";
 import AdminPage from "./Admin";
 
-type Screen = "shop" | "account" | "deposit" | "order-payment";
+type Screen = "shop" | "account" | "order-payment";
 type OrderPaymentOrigin = "shop" | "account";
 
 const Index = () => {
@@ -67,7 +66,6 @@ const Index = () => {
   const [showAdmin, setShowAdmin] = useState(false);
   const [openProduct, setOpenProduct] = useState<Product | null>(null);
   const [screen, setScreen] = useState<Screen>("shop");
-  const [depositSuggested, setDepositSuggested] = useState<number | undefined>(undefined);
   const [orderPaymentOrigin, setOrderPaymentOrigin] = useState<OrderPaymentOrigin>("shop");
 
   const cartLines = useCart((s) => s.lines);
@@ -140,21 +138,6 @@ const Index = () => {
       />
     );
 
-  if (screen === "deposit")
-    return (
-      <DepositPage
-        suggested={depositSuggested}
-        onBack={() => {
-          setDepositSuggested(undefined);
-          setScreen("account");
-        }}
-        onDone={() => {
-          setDepositSuggested(undefined);
-          setScreen("account");
-        }}
-      />
-    );
-
   if (screen === "order-payment")
     return (
       <OrderPaymentPage
@@ -167,10 +150,6 @@ const Index = () => {
     return (
       <AccountPage
         onBack={() => setScreen("shop")}
-        onTopUp={() => {
-          setDepositSuggested(undefined);
-          setScreen("deposit");
-        }}
         onOpenCart={() => {
           setScreen("shop");
           setCartOpen(true);
