@@ -86,31 +86,30 @@ export const OrderPaymentPage = ({ onBack, onPaid }: OrderPaymentPageProps) => {
     const customerName = user?.first_name
       ? `${user.first_name}${user.last_name ? " " + user.last_name : ""}${user.username ? ` (@${user.username})` : ""}`
       : user?.username ? `@${user.username}` : undefined;
+    // Снимаем снэпшот для отправки на бэк ДО очистки корзины.
+    const snapshot = {
+      totalUSD: total,
+      items: lines,
+      delivery,
+      deliveryAddress: delivery ? deliveryAddress : undefined,
+      status: "awaiting" as const,
+      customerName,
+      customerTgId: user?.id,
+      crypto,
+      payAddress: cryptoMeta.address,
+    };
+    // Сразу чистим корзину и переводим UI в режим ожидания — независимо от ответа сети.
+    clearCart();
+    haptic("success");
+    toast.success(tr("Ждём подтверждения", "Waiting for confirmation"));
+    onPaid();
     try {
-      await addOrder({
-        totalUSD: total,
-        items: lines,
-        delivery,
-        deliveryAddress: delivery ? deliveryAddress : undefined,
-        status: "awaiting",
-        customerName,
-        customerTgId: user?.id,
-        crypto,
-        payAddress: cryptoMeta.address,
-      });
-      haptic("success");
-      clearCart();
+      await addOrder(snapshot);
       await hydrateAccount().catch(() => {});
-      toast.success(tr("Ждём подтверждения", "Waiting for confirmation"));
-      onPaid();
     } catch (e: any) {
-      haptic("error");
       const code = e?.body?.error;
       if (code === "order_already_submitted") {
-        clearCart();
-        hydrateAccount().catch(() => {});
-        toast.success(tr("Заказ уже отправлен на подтверждение", "Order is already awaiting confirmation"));
-        onPaid();
+        await hydrateAccount().catch(() => {});
         return;
       }
       const msg = code === "insufficient_balance"
@@ -122,6 +121,7 @@ export const OrderPaymentPage = ({ onBack, onPaid }: OrderPaymentPageProps) => {
         : code === "unauthorized"
         ? tr("Сессия истекла — перезайдите через Telegram", "Session expired — re-open via Telegram")
         : tr(`Не удалось оформить заказ${code ? `: ${code}` : ""}`, `Failed to place order${code ? `: ${code}` : ""}`);
+      haptic("error");
       toast.error(msg);
       console.error("[order] create failed", e);
       setSubmitting(false);
