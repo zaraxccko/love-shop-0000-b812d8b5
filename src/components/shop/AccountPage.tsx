@@ -143,8 +143,6 @@ export const AccountPage = ({ onBack, onOpenCart, onOpenActiveOrder }: AccountPa
     if (tgAny?.openTelegramLink) tgAny.openTelegramLink(url);
     else window.open(url, "_blank", "noopener,noreferrer");
   };
-    else window.open(url, "_blank", "noopener,noreferrer");
-  };
 
   return (
     <div className="min-h-screen max-w-md mx-auto bg-background">
