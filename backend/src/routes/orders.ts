@@ -4,46 +4,56 @@ import { prisma } from "../db.js";
 import { requireAuth } from "../auth/middleware.js";
 import { notifyAdmins } from "../bot.js";
 
-const CartLineSchema = z.object({
-  productId: z.string().optional(),
-  product: z.any().optional(),
-  productName: z.any().optional(),
-  qty: z.number().int().positive().max(99),
-  variantId: z.string().optional(),
-  districtSlug: z.string().optional(),
-  stashType: z.enum(["prikop", "klad", "magnit"]).optional(),
-  priceUSD: z.number().nonnegative().optional(),
-}).superRefine((item, ctx) => {
-  const productId = item.productId ?? item.product?.id;
-  if (!productId || typeof productId !== "string") {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "product_id_required", path: ["productId"] });
-  }
-});
+// Очень терпимая схема: фронт может слать строку либо как { productId } либо как { product: {...} }.
+// Подарки могут не иметь priceUSD/variantId. Главное — валидное qty и хотя бы какой-то идентификатор товара.
+const CartLineSchema = z
+  .object({
+    productId: z.string().optional(),
+    product: z.any().optional(),
+    productName: z.any().optional(),
+    qty: z.number().int().positive().max(99),
+    variantId: z.string().optional(),
+    districtSlug: z.string().nullish(),
+    stashType: z.string().nullish(),
+    priceUSD: z.number().nonnegative().nullish(),
+    isGift: z.boolean().optional(),
+  })
+  .passthrough()
+  .superRefine((item, ctx) => {
+    const productId = item.productId ?? item.product?.id;
+    if (!productId || typeof productId !== "string") {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "product_id_required", path: ["productId"] });
+    }
+  });
 
 const CreateOrderSchema = z.object({
   totalUSD: z.number().nonnegative().max(1000000),
   items: z.array(CartLineSchema).min(1).max(50),
   delivery: z.boolean(),
-  deliveryAddress: z.string().max(500).optional(),
-  crypto: z.string().optional(),
-  payAddress: z.string().optional(),
+  deliveryAddress: z.string().max(500).nullish(),
+  crypto: z.string().nullish(),
+  payAddress: z.string().nullish(),
 });
 
 export async function orderRoutes(app: FastifyInstance) {
   /** POST /api/orders — оформить заказ. Списывает с баланса в одной транзакции. */
   app.post("/orders", { preHandler: requireAuth }, async (req, reply) => {
     const parsed = CreateOrderSchema.safeParse(req.body);
-    if (!parsed.success) return reply.code(400).send({ error: parsed.error.flatten() });
+    if (!parsed.success) {
+      req.log.warn({ issues: parsed.error.flatten(), body: req.body }, "order validation failed");
+      return reply.code(400).send({ error: "validation_failed", details: parsed.error.flatten() });
+    }
 
     const data = parsed.data;
-    if (data.delivery && !data.deliveryAddress?.trim()) {
+    if (data.delivery && !data.deliveryAddress?.toString().trim()) {
       return reply.code(400).send({ error: "delivery_address_required" });
     }
 
-    const snapshotItems = data.items.map((item) => ({
+    const snapshotItems = data.items.map((item: any) => ({
       ...item,
       productId: item.productId ?? item.product?.id,
       productName: item.productName ?? item.product?.name,
+      priceUSD: item.priceUSD ?? 0,
     }));
 
     const order = await prisma.$transaction(async (tx) => {
@@ -62,9 +72,9 @@ export async function orderRoutes(app: FastifyInstance) {
           totalUSD: data.totalUSD,
           items: snapshotItems as any,
           delivery: data.delivery,
-          deliveryAddress: data.deliveryAddress,
-          crypto: data.crypto,
-          payAddress: data.payAddress,
+          deliveryAddress: data.deliveryAddress ?? undefined,
+          crypto: data.crypto ?? undefined,
+          payAddress: data.payAddress ?? undefined,
           status: "awaiting",
         },
       });

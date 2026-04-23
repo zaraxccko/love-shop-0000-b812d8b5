@@ -92,10 +92,18 @@ export const OrderPaymentPage = ({ onBack, onPaid }: OrderPaymentPageProps) => {
       onPaid();
     } catch (e: any) {
       haptic("error");
-      const msg = e?.body?.error === "insufficient_balance"
-        ? tr("Недостаточно средств", "Not enough balance")
-        : tr("Не удалось оформить заказ", "Failed to place order");
+      const code = e?.body?.error;
+      const msg = code === "insufficient_balance"
+        ? tr("Недостаточно средств на балансе", "Not enough balance")
+        : code === "delivery_address_required"
+        ? tr("Укажите адрес доставки", "Enter delivery address")
+        : code === "validation_failed"
+        ? tr("Ошибка данных заказа — проверьте корзину", "Invalid order data — check the cart")
+        : code === "unauthorized"
+        ? tr("Сессия истекла — перезайдите через Telegram", "Session expired — re-open via Telegram")
+        : tr(`Не удалось оформить заказ${code ? `: ${code}` : ""}`, `Failed to place order${code ? `: ${code}` : ""}`);
       toast.error(msg);
+      console.error("[order] create failed", e);
     }
   };
 
