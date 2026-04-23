@@ -1131,7 +1131,9 @@ const DepositsTab = () => {
                 <div key={o.id} className="bg-card rounded-2xl p-3 shadow-card space-y-2">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <div className="font-display font-bold text-lg">${o.totalUSD}</div>
+                      <div className="font-display font-bold text-lg">
+                        ${o.totalUSD}{o.crypto ? <span className="text-sm text-muted-foreground font-normal"> · {o.crypto}</span> : null}
+                      </div>
                       <div className="text-[11px] text-muted-foreground truncate">
                         {o.customerName ?? (o.customerTgId ? `TG ${o.customerTgId}` : "Гость")} · {fmt(o.createdAt)}
                       </div>
