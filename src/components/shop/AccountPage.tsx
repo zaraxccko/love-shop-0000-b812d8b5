@@ -142,21 +142,26 @@ export const AccountPage = ({ onBack, onOpenCart, onOpenActiveOrder }: AccountPa
     const tgAny = tg as any;
     const httpsLink = `https://t.me/${SUPPORT_USERNAME}`;
     const tgDeepLink = `tg://resolve?domain=${SUPPORT_USERNAME}`;
+    const openBrowserLink = () => {
+      const popup = window.open(httpsLink, "_blank", "noopener,noreferrer");
+      if (!popup) window.location.href = httpsLink;
+    };
 
-    // 1) tg:// deep-link через openLink — самый надёжный путь, открывает чат поверх Mini App
-    if (tgAny?.openLink) {
-      try { tgAny.openLink(tgDeepLink); return; } catch {}
-    }
-    // 2) openTelegramLink (требует https://t.me/...)
+    // 1) openTelegramLink с https — самый стабильный вариант и в Telegram, и в desktop preview
     if (tgAny?.openTelegramLink) {
       try { tgAny.openTelegramLink(httpsLink); return; } catch {}
     }
-    // 3) openLink с https — fallback
+    // 2) openLink с https — fallback для старых клиентов
     if (tgAny?.openLink) {
       try { tgAny.openLink(httpsLink); return; } catch {}
     }
-    // 4) Браузер / iframe — обычная ссылка
-    window.open(httpsLink, "_blank", "noopener,noreferrer");
+    // 3) Браузер / iframe — обычная ссылка
+    try { openBrowserLink(); return; } catch {}
+    // 4) tg:// оставляем самым последним резервом, если https-методы недоступны
+    if (tgAny?.openLink) {
+      try { tgAny.openLink(tgDeepLink); return; } catch {}
+    }
+    window.location.href = httpsLink;
   };
 
   return (
