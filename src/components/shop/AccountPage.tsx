@@ -42,6 +42,9 @@ export const AccountPage = ({ onBack, onTopUp, onOpenCart, onOpenActiveOrder }: 
   const reservedAt = useCart((s) => s.reservedAt);
   const clearCart = useCart((s) => s.clear);
 
+  /** Самый свежий заказ, ожидающий подтверждения админом. */
+  const awaitingOrder = orders.find((o) => o.status === "awaiting") ?? null;
+
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     if (!reservedAt || cartLines.length === 0) return;
@@ -128,13 +131,37 @@ export const AccountPage = ({ onBack, onTopUp, onOpenCart, onOpenActiveOrder }: 
             <div className="font-display font-bold text-lg flex items-center gap-2">
               <ShoppingBag className="w-4 h-4" /> {tr("Активный заказ", "Active order")}
             </div>
-            {cartLines.length > 0 && (
+            {cartLines.length > 0 && !awaitingOrder && (
               <button onClick={onOpenActiveOrder} className="text-xs font-bold text-primary">
                 {tr("Открыть", "Open")}
               </button>
             )}
           </div>
-          {cartLines.length === 0 ? (
+          {awaitingOrder ? (
+            <div
+              className="w-full rounded-2xl bg-card shadow-card p-4 space-y-2 opacity-90 cursor-default select-none"
+              aria-disabled="true"
+            >
+              <div className="flex items-center justify-between">
+                <div className="text-[11px] font-mono font-bold text-muted-foreground">
+                  #{awaitingOrder.id}
+                </div>
+                <span className="text-[11px] font-bold rounded-full px-2.5 py-1 bg-amber-500/15 text-amber-600">
+                  {tr("Ждём подтверждения", "Waiting for confirmation")}
+                </span>
+              </div>
+              <div className="font-display font-bold text-xl">{formatTHB(awaitingOrder.totalUSD)}</div>
+              <div className="flex items-center gap-2 rounded-xl bg-amber-500/10 text-amber-600 px-3 py-2">
+                <Clock className="w-4 h-4" />
+                <div className="text-[11px] font-bold">
+                  {tr(
+                    "Заявка отправлена — ждите ответа администратора",
+                    "Submitted — waiting for admin response"
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : cartLines.length === 0 ? (
             <div className="rounded-2xl bg-card shadow-card p-4 text-sm text-muted-foreground text-center">
               {tr("Корзина пуста", "Cart is empty")}
             </div>
