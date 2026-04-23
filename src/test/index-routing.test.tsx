@@ -70,6 +70,7 @@ const mockCartLine = {
     description: { ru: "", en: "" },
     category: "all",
     priceTHB: 100,
+    inStock: 10,
     gradient: "gradient-primary",
     emoji: "✨",
     cities: [],
