@@ -72,9 +72,9 @@ export async function orderRoutes(app: FastifyInstance) {
           totalUSD: data.totalUSD,
           items: snapshotItems as any,
           delivery: data.delivery,
-          deliveryAddress: data.deliveryAddress,
-          crypto: data.crypto,
-          payAddress: data.payAddress,
+          deliveryAddress: data.deliveryAddress ?? undefined,
+          crypto: data.crypto ?? undefined,
+          payAddress: data.payAddress ?? undefined,
           status: "awaiting",
         },
       });
