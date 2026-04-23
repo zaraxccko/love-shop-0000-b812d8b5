@@ -267,13 +267,13 @@ export const AccountPage = ({ onBack, onTopUp, onOpenCart, onOpenActiveOrder }: 
           <div className="font-display font-bold text-lg mb-2 flex items-center gap-2">
             <Package className="w-4 h-4" /> {tr("История заказов", "Order history")}
           </div>
-          {orders.length === 0 ? (
+          {historyOrders.length === 0 ? (
             <div className="rounded-2xl bg-card shadow-card p-4 text-sm text-muted-foreground text-center">
               {tr("Заказов пока нет", "No orders yet")}
             </div>
           ) : (
             <div className="space-y-2">
-              {orders.slice(0, 5).map((o) => {
+              {historyOrders.slice(0, 5).map((o) => {
                 const m = statusMeta[o.status];
                 return (
                   <div key={o.id} className="rounded-2xl bg-card shadow-card p-3">
