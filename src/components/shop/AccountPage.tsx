@@ -142,7 +142,7 @@ export const AccountPage = ({ onBack, onTopUp, onOpenCart, onOpenActiveOrder }: 
             <div className="font-display font-bold text-lg flex items-center gap-2">
               <ShoppingBag className="w-4 h-4" /> {tr("Активный заказ", "Active order")}
             </div>
-            {cartLines.length > 0 && !awaitingOrder && (
+            {cartLines.length > 0 && !awaitingOrder && !confirmedOrder && (
               <button onClick={onOpenActiveOrder} className="text-xs font-bold text-primary">
                 {tr("Открыть", "Open")}
               </button>
