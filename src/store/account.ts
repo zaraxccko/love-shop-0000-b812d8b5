@@ -172,7 +172,10 @@ export const useAccount = create<AccountState>((set, get) => ({
         crypto: o.crypto,
         payAddress: o.payAddress,
       })) as OrderRecord;
-      set((s) => ({ orders: [created, ...s.orders] }));
+      set((s) => {
+        const nextOrders = [created, ...s.orders.filter((order) => order.id !== created.id)];
+        return { orders: nextOrders };
+      });
       Auth.me().then((me) => set({ balanceUSD: me.balanceUSD })).catch(() => {});
       return created;
     } catch (e) {

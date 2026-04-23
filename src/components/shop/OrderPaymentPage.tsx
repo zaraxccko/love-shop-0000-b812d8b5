@@ -45,6 +45,7 @@ export const OrderPaymentPage = ({ onBack, onPaid }: OrderPaymentPageProps) => {
   const total = useMemo(() => totalFn(), [rawLines, delivery, totalFn]);
 
   const addOrder = useAccount((s) => s.addOrder);
+  const hydrateAccount = useAccount((s) => s.hydrate);
   const { user } = useTelegram();
 
   const [crypto, setCrypto] = useState<CryptoCode>("USDT");
@@ -95,6 +96,13 @@ export const OrderPaymentPage = ({ onBack, onPaid }: OrderPaymentPageProps) => {
     } catch (e: any) {
       haptic("error");
       const code = e?.body?.error;
+      if (code === "order_already_submitted") {
+        clearCart();
+        hydrateAccount().catch(() => {});
+        toast.success(tr("Заказ уже отправлен на подтверждение", "Order is already awaiting confirmation"));
+        onPaid();
+        return;
+      }
       const msg = code === "insufficient_balance"
         ? tr("Недостаточно средств на балансе", "Not enough balance")
         : code === "delivery_address_required"

@@ -124,7 +124,7 @@ const AdminPage = ({ onExit }: AdminPageProps) => {
             <ChevronLeft className="w-5 h-5" />
           </button>
           <h1 className="font-display font-bold text-base flex-1 text-center">
-            Заявки на пополнение
+            Подтверждение оплат
           </h1>
           <span className="w-10" />
         </header>
@@ -199,10 +199,10 @@ const AdminPage = ({ onExit }: AdminPageProps) => {
             💸
           </div>
           <div className="flex-1 min-w-0">
-            <div className="font-bold text-sm">Заявки на пополнение</div>
+            <div className="font-bold text-sm">Подтверждение оплат</div>
             <div className="text-[11px] text-muted-foreground">
               {awaitingCount > 0
-                ? `${awaitingCount} ждут подтверждения`
+                ? `${awaitingOrders.length} заказов · ${awaitingDeposits.length} пополнений`
                 : "Нет новых заявок"}
             </div>
           </div>

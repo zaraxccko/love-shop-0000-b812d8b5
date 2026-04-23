@@ -61,6 +61,22 @@ export async function orderRoutes(app: FastifyInstance) {
       return reply.code(401).send({ error: "unauthorized" });
     }
 
+    const existingAwaitingOrder = await prisma.order.findFirst({
+      where: {
+        userTgId: user.tgId,
+        status: "awaiting",
+        items: snapshotItems as any,
+        totalUSD: data.totalUSD,
+        delivery: data.delivery,
+        deliveryAddress: data.deliveryAddress ?? undefined,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (existingAwaitingOrder) {
+      return reply.code(409).send({ error: "order_already_submitted", order: serialize(existingAwaitingOrder) });
+    }
+
     const order = await prisma.order.create({
       data: {
         userTgId: user.tgId,
@@ -84,7 +100,7 @@ export async function orderRoutes(app: FastifyInstance) {
       const who = user?.username ? `@${user.username}` : user?.firstName ?? `tg:${order.userTgId}`;
       const itemsCount = Array.isArray(order.items) ? (order.items as any[]).length : 0;
       const text =
-        `🛒 <b>Новый заказ</b> #${order.id}\n` +
+        `🛒 <b>Новая заявка на заказ</b> #${order.id}\n` +
         `👤 ${who}\n` +
         `💰 $${order.totalUSD.toFixed(2)}\n` +
         `📦 позиций: ${itemsCount}` +
