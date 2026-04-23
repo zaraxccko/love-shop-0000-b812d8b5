@@ -53,7 +53,7 @@ export const AccountPage = ({ onBack, onTopUp, onOpenCart, onOpenActiveOrder }: 
     null;
   const awaitingOrder = activeOrder?.status === "awaiting" ? activeOrder : null;
   const confirmedOrder = activeOrder && activeOrder.status !== "awaiting" ? activeOrder : null;
-  // Скрываем подтверждённый заказ из истории, чтобы не дублировать.
+  // Скрываем подтверждённый заказ из истории, чтобы не дублировать его в списке.
   const historyOrders = orders.filter((o) => o.id !== confirmedOrder?.id);
 
   const [now, setNow] = useState(() => Date.now());
