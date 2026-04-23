@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Trash2, Pencil, Plus, RotateCcw, Eye, ChevronLeft, MapPin, Check, X, Image as ImageIcon, Truck } from "lucide-react";
 import { useAuth } from "@/store/auth";
 import { useCatalog } from "@/store/catalog";
-import { useAccount, type OrderRecord } from "@/store/account";
+import type { OrderRecord } from "@/store/account";
+import { useAdminPanel } from "@/store/adminPanel";
 import { useT } from "@/lib/i18n";
 import { loc } from "@/lib/loc";
 import { COUNTRIES, findDistrict } from "@/data/locations";
@@ -99,6 +100,13 @@ const AdminPage = ({ onExit }: AdminPageProps) => {
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  const refreshAll = useAdminPanel((s) => s.refreshAll);
+  const awaitingOrders = useAdminPanel((s) => s.awaitingOrders);
+  const awaitingDeposits = useAdminPanel((s) => s.awaitingDeposits);
+
+  useEffect(() => {
+    refreshAll();
+  }, [refreshAll]);
 
   const allCities = COUNTRIES.flatMap((c) => c.cities.map((city) => ({ ...city, country: c })));
   const activeCountry = COUNTRIES.find((c) => c.slug === selectedCountry);
@@ -169,10 +177,7 @@ const AdminPage = ({ onExit }: AdminPageProps) => {
 
   // Geo picker — country first
   if (!selectedCountry) {
-    const accState = useAccount.getState();
-    const awaitingCount =
-      accState.orders.filter((o) => o.status === "awaiting").length +
-      accState.deposits.filter((d) => d.status === "awaiting").length;
+    const awaitingCount = awaitingOrders.length + awaitingDeposits.length;
     return (
       <div className="min-h-screen max-w-md mx-auto bg-background px-5 pt-6 pb-10">
         <header className="flex items-center justify-between mb-6">
@@ -368,9 +373,13 @@ const AdminPage = ({ onExit }: AdminPageProps) => {
                 Районы города
               </div>
               {activeCity.districts.map((d) => {
-                const items = visibleProducts.filter((p) =>
-                  p.districts?.includes(d.slug)
-                );
+                const items = visibleProducts.filter((p) => {
+                  if (p.districts?.includes(d.slug)) return true;
+                  return (p.variants ?? []).some((v) => {
+                    if (v.districts?.includes(d.slug)) return true;
+                    return (v.stashes ?? []).some((stash) => stash.districtSlug === d.slug);
+                  });
+                });
                 return (
                   <div key={d.slug} className="border-t pt-2 first:border-t-0 first:pt-0">
                     <div className="flex items-center justify-between">
@@ -1034,16 +1043,17 @@ const AdminPage = ({ onExit }: AdminPageProps) => {
 };
 
 const DepositsTab = () => {
-  const orders = useAccount((s) => s.orders);
-  const deposits = useAccount((s) => s.deposits);
-  const confirmOrder = useAccount((s) => s.confirmOrder);
-  const cancelOrder = useAccount((s) => s.cancelOrder);
-  const confirmDeposit = useAccount((s) => s.confirmDeposit);
-  const cancelDeposit = useAccount((s) => s.cancelDeposit);
+  const orders = useAdminPanel((s) => s.awaitingOrders);
+  const deposits = useAdminPanel((s) => s.awaitingDeposits);
+  const historyOrders = useAdminPanel((s) => s.historyOrders);
+  const historyDeposits = useAdminPanel((s) => s.historyDeposits);
+  const confirmOrder = useAdminPanel((s) => s.confirmOrder);
+  const cancelOrder = useAdminPanel((s) => s.cancelOrder);
+  const confirmDeposit = useAdminPanel((s) => s.confirmDeposit);
+  const cancelDeposit = useAdminPanel((s) => s.cancelDeposit);
 
-  const awaitingOrders = orders.filter((o) => o.status === "awaiting");
-  const awaitingDeposits = deposits.filter((d) => d.status === "awaiting");
-  const historyDeposits = deposits.filter((d) => d.status === "confirmed" || d.status === "cancelled");
+  const awaitingOrders = orders;
+  const awaitingDeposits = deposits;
 
   const [confirmTarget, setConfirmTarget] = useState<OrderRecord | null>(null);
   const [photo, setPhoto] = useState<string>("");
@@ -1282,8 +1292,7 @@ const DepositsTab = () => {
           | { kind: "order"; id: string; createdAt: string; status: string; totalUSD: number; crypto?: string; customerName?: string; customerTgId?: number }
           | { kind: "deposit"; id: string; createdAt: string; status: string; totalUSD: number; crypto?: string; customerName?: string; customerTgId?: number };
 
-        const orderItems: HistoryItem[] = orders
-          .filter((o) => o.status !== "awaiting")
+        const orderItems: HistoryItem[] = historyOrders
           .map((o) => ({
             kind: "order",
             id: o.id,
@@ -1295,8 +1304,7 @@ const DepositsTab = () => {
             customerTgId: o.customerTgId,
           }));
 
-        const depositItems: HistoryItem[] = deposits
-          .filter((d) => d.status === "confirmed" || d.status === "cancelled")
+        const depositItems: HistoryItem[] = historyDeposits
           .filter((d) => !(d.status === "cancelled" && !d.paidAt))
           .map((d) => ({
             kind: "deposit",
