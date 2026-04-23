@@ -140,10 +140,9 @@ export const AccountPage = ({ onBack, onOpenCart, onOpenActiveOrder }: AccountPa
   const openSupport = () => {
     haptic("light");
     const tgAny = tg as any;
-    const tgDeepLink = `tg://resolve?domain=${SUPPORT_USERNAME}`;
     const httpsLink = `https://t.me/${SUPPORT_USERNAME}`;
+    const tgDeepLink = `tg://resolve?domain=${SUPPORT_USERNAME}`;
 
-    // Внутри Telegram Mini App — только openTelegramLink (не сворачивает приложение)
     if (tgAny?.openTelegramLink) {
       try {
         tgAny.openTelegramLink(httpsLink);
@@ -151,12 +150,9 @@ export const AccountPage = ({ onBack, onOpenCart, onOpenActiveOrder }: AccountPa
       } catch {}
     }
     if (tgAny?.openLink) {
-      try {
-        tgAny.openLink(httpsLink);
-        return;
-      } catch {}
+      try { tgAny.openLink(tgDeepLink); return; } catch {}
+      try { tgAny.openLink(httpsLink); return; } catch {}
     }
-    // Браузер / iframe — обычная ссылка
     window.open(httpsLink, "_blank", "noopener,noreferrer");
   };
 
