@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { useAccount, type OrderRecord } from "@/store/account";
 import { useCart, RESERVATION_MS } from "@/store/cart";
 import { useI18n } from "@/lib/i18n";
-import { useTelegram, haptic } from "@/lib/telegram";
+import { useTelegram, haptic, isTelegramClient } from "@/lib/telegram";
 import { useCatalog } from "@/store/catalog";
 import { formatTHB } from "@/lib/format";
 import { loc } from "@/lib/loc";
@@ -142,12 +142,18 @@ export const AccountPage = ({ onBack, onOpenCart, onOpenActiveOrder }: AccountPa
     const tgAny = tg as any;
     const httpsLink = `https://t.me/${SUPPORT_USERNAME}`;
     const tgDeepLink = `tg://resolve?domain=${SUPPORT_USERNAME}`;
+    const inTelegramClient = isTelegramClient(tg);
     const openBrowserLink = () => {
       const popup = window.open(httpsLink, "_blank", "noopener,noreferrer");
       if (!popup) window.location.href = httpsLink;
     };
 
-    // 1) openTelegramLink с https — самый стабильный вариант и в Telegram, и в desktop preview
+    if (!inTelegramClient) {
+      openBrowserLink();
+      return;
+    }
+
+    // 1) openTelegramLink с https — самый стабильный вариант внутри Telegram
     if (tgAny?.openTelegramLink) {
       try { tgAny.openTelegramLink(httpsLink); return; } catch {}
     }
@@ -155,12 +161,12 @@ export const AccountPage = ({ onBack, onOpenCart, onOpenActiveOrder }: AccountPa
     if (tgAny?.openLink) {
       try { tgAny.openLink(httpsLink); return; } catch {}
     }
-    // 3) Браузер / iframe — обычная ссылка
-    try { openBrowserLink(); return; } catch {}
-    // 4) tg:// оставляем самым последним резервом, если https-методы недоступны
+    // 3) tg:// как запасной вариант только внутри Telegram
     if (tgAny?.openLink) {
       try { tgAny.openLink(tgDeepLink); return; } catch {}
     }
+    // 4) Браузер / iframe — обычная ссылка
+    try { openBrowserLink(); return; } catch {}
     window.location.href = httpsLink;
   };
 
