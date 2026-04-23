@@ -282,7 +282,11 @@ export const OrderPaymentPage = ({ onBack, onPaid }: OrderPaymentPageProps) => {
             <CryptoAmountCard
               amountUSD={total}
               crypto={crypto}
-              cryptoName={`${cryptoMeta.name} · ${cryptoMeta.network}`}
+              cryptoName={
+                cryptoMeta.name === cryptoMeta.network || cryptoMeta.code === cryptoMeta.network
+                  ? cryptoMeta.name
+                  : `${cryptoMeta.name} · ${cryptoMeta.network}`
+              }
             />
 
             {/* Wallet address */}
@@ -304,10 +308,15 @@ export const OrderPaymentPage = ({ onBack, onPaid }: OrderPaymentPageProps) => {
               <div className="flex gap-2 items-start">
                 <span className="text-primary font-bold">⚠️</span>
                 <span>
-                  {tr(
-                    `Отправляйте только ${cryptoMeta.name} в сети ${cryptoMeta.network}.`,
-                    `Send only ${cryptoMeta.name} on the ${cryptoMeta.network} network.`
-                  )}
+                  {cryptoMeta.name === cryptoMeta.network || cryptoMeta.code === cryptoMeta.network
+                    ? tr(
+                        `Отправляйте только ${cryptoMeta.name}.`,
+                        `Send only ${cryptoMeta.name}.`
+                      )
+                    : tr(
+                        `Отправляйте только ${cryptoMeta.name} в сети ${cryptoMeta.network}.`,
+                        `Send only ${cryptoMeta.name} on the ${cryptoMeta.network} network.`
+                      )}
                 </span>
               </div>
               <div className="flex gap-2 items-start">
