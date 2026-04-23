@@ -76,38 +76,27 @@ export async function orderRoutes(app: FastifyInstance) {
       return reply.code(200).send(serialize(recentSame));
     }
 
+    const user = await prisma.user.findUnique({ where: { tgId: req.user!.tgId } });
+    if (!user) {
+      return reply.code(401).send({ error: "unauthorized" });
+    }
+
     try {
-      // Атомарно: проверяем баланс, списываем, создаём заказ.
-      const order = await prisma.$transaction(async (tx) => {
-        const user = await tx.user.findUnique({ where: { tgId: req.user!.tgId } });
-        if (!user) throw new Error("user_not_found");
-        if (user.balanceUSD + 1e-6 < data.totalUSD) {
-          const err: any = new Error("insufficient_balance");
-          err.code = "insufficient_balance";
-          err.balanceUSD = user.balanceUSD;
-          throw err;
-        }
-        await tx.user.update({
-          where: { tgId: user.tgId },
-          data: { balanceUSD: { decrement: data.totalUSD } },
-        });
-        return tx.order.create({
-          data: {
-            userTgId: user.tgId,
-            totalUSD: data.totalUSD,
-            items: snapshotItems as any,
-            delivery: data.delivery,
-            deliveryAddress: data.deliveryAddress ?? undefined,
-            crypto: data.crypto ?? undefined,
-            payAddress: data.payAddress ?? undefined,
-            status: "awaiting",
-          },
-        });
+      const order = await prisma.order.create({
+        data: {
+          userTgId: user.tgId,
+          totalUSD: data.totalUSD,
+          items: snapshotItems as any,
+          delivery: data.delivery,
+          deliveryAddress: data.deliveryAddress ?? undefined,
+          crypto: data.crypto ?? undefined,
+          payAddress: data.payAddress ?? undefined,
+          status: "awaiting",
+        },
       });
 
       // Уведомление админам — не блокирует ответ.
       try {
-        const user = await prisma.user.findUnique({ where: { tgId: order.userTgId } });
         const who = user?.username ? `@${user.username}` : user?.firstName ?? `tg:${order.userTgId}`;
         const itemsCount = Array.isArray(order.items) ? (order.items as any[]).length : 0;
         const text =
@@ -125,9 +114,6 @@ export async function orderRoutes(app: FastifyInstance) {
 
       return serialize(order);
     } catch (e: any) {
-      if (e?.code === "insufficient_balance") {
-        return reply.code(402).send({ error: "insufficient_balance", balanceUSD: e.balanceUSD });
-      }
       if (e?.message === "user_not_found") {
         return reply.code(401).send({ error: "unauthorized" });
       }

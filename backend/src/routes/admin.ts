@@ -184,22 +184,15 @@ export async function adminRoutes(app: FastifyInstance) {
       if (order.status === "cancelled") {
         return reply.code(400).send({ error: "already_cancelled" });
       }
-      // Возвращаем деньги на баланс юзера и помечаем как cancelled — атомарно.
-      const updated = await prisma.$transaction(async (tx) => {
-        await tx.user.update({
-          where: { tgId: order.userTgId },
-          data: { balanceUSD: { increment: order.totalUSD } },
-        });
-        return tx.order.update({
-          where: { id: order.id },
-          data: { status: "cancelled" },
-        });
+      const updated = await prisma.order.update({
+        where: { id: order.id },
+        data: { status: "cancelled" },
       });
       try {
         const { bot } = await import("../bot.js");
         await bot.sendMessage(
           Number(order.userTgId),
-          `❌ Ваш заказ #${order.id} отклонён. $${order.totalUSD.toFixed(2)} возвращены на баланс.`
+          `❌ Ваш заказ #${order.id} отклонён.`
         );
       } catch {}
       return serializeOrder(updated);

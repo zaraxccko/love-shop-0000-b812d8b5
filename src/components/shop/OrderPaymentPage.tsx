@@ -88,16 +88,7 @@ export const OrderPaymentPage = ({ onBack, onPaid }: OrderPaymentPageProps) => {
       : user?.username ? `@${user.username}` : undefined;
     const snapshot = {
       totalUSD: total,
-      items: lines.map((line) => ({
-        productId: line.product.id,
-        productName: line.product.name,
-        qty: line.qty,
-        variantId: line.variantId,
-        districtSlug: line.districtSlug,
-        stashType: line.stashType,
-        priceUSD: line.priceUSD,
-        isGift: line.isGift,
-      })),
+      items: lines,
       delivery,
       deliveryAddress: delivery ? deliveryAddress : undefined,
       status: "awaiting" as const,

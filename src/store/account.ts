@@ -183,7 +183,16 @@ export const useAccount = create<AccountState>((set, get) => ({
     try {
       const created = (await Orders.create({
         totalUSD: o.totalUSD,
-        items: o.items,
+        items: o.items.map((item: any) => ({
+          productId: item.product?.id,
+          productName: item.productName ?? item.product?.name,
+          qty: item.qty,
+          variantId: item.variantId,
+          districtSlug: item.districtSlug,
+          stashType: item.stashType,
+          priceUSD: item.priceUSD,
+          isGift: item.isGift,
+        })),
         delivery: o.delivery,
         deliveryAddress: o.deliveryAddress,
         crypto: o.crypto,
