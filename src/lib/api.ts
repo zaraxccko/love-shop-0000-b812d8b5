@@ -1,12 +1,7 @@
 // ============================================================
-// 🌐 API client
-// ============================================================
-// Тонкая обёртка над fetch с авто-подстановкой JWT-токена.
-// Базовый URL берётся из VITE_API_URL (см. .env.example).
+// 🌐 API client — тонкая обёртка над fetch с авто-JWT.
 // ============================================================
 
-// Базовый URL API. Из .env (VITE_API_URL), по умолчанию "/api".
-// Гарантируем, что URL заканчивается на "/api" — Caddy ожидает этот префикс.
 function resolveBase(): string {
   const raw = (import.meta.env.VITE_API_URL as string | undefined)?.trim();
   if (!raw) return "/api";
@@ -19,16 +14,11 @@ const TOKEN_KEY = "loveshop-token";
 
 export const tokenStore = {
   get: () => localStorage.getItem(TOKEN_KEY),
-  set: (t: string | null) => {
-    if (t) localStorage.setItem(TOKEN_KEY, t);
-    else localStorage.removeItem(TOKEN_KEY);
-  },
+  set: (t: string | null) => { if (t) localStorage.setItem(TOKEN_KEY, t); else localStorage.removeItem(TOKEN_KEY); },
 };
 
 export class ApiError extends Error {
-  constructor(public status: number, message: string, public body?: unknown) {
-    super(message);
-  }
+  constructor(public status: number, message: string, public body?: unknown) { super(message); }
 }
 
 type ReqInit = Omit<RequestInit, "body"> & { body?: unknown };
@@ -53,22 +43,15 @@ export async function api<T = unknown>(path: string, init: ReqInit = {}): Promis
   const text = await res.text();
   if (looksLikeHtml(contentType, text)) {
     throw new ApiError(502, "API returned HTML instead of JSON", {
-      error: "api_misconfigured",
-      path: `${BASE}${path}`,
+      error: "api_misconfigured", path: `${BASE}${path}`,
     });
   }
   const data = text ? safeJson(text) : null;
-
-  if (!res.ok) {
-    throw new ApiError(res.status, `${res.status} ${res.statusText}`, data);
-  }
+  if (!res.ok) throw new ApiError(res.status, `${res.status} ${res.statusText}`, data);
   return data as T;
 }
 
-function safeJson(s: string) {
-  try { return JSON.parse(s); } catch { return s; }
-}
-
+function safeJson(s: string) { try { return JSON.parse(s); } catch { return s; } }
 function looksLikeHtml(contentType: string, text: string) {
   if (/text\/html/i.test(contentType)) return true;
   const trimmed = text.trimStart().slice(0, 64).toLowerCase();
@@ -98,17 +81,8 @@ export const Auth = {
 };
 
 export const Catalog = {
-  list: (city?: string) =>
-    api<any[]>(`/catalog${city ? `?city=${encodeURIComponent(city)}` : ""}`),
+  list: (city?: string) => api<any[]>(`/catalog${city ? `?city=${encodeURIComponent(city)}` : ""}`),
   categories: () => api<string[]>("/categories"),
-};
-
-export const Deposits = {
-  create: (amountUSD: number, crypto: string) =>
-    api<any>("/deposits", { method: "POST", body: { amountUSD, crypto } }),
-  markPaid: (id: string) => api<any>(`/deposits/${id}/paid`, { method: "POST" }),
-  cancel: (id: string) => api<any>(`/deposits/${id}/cancel`, { method: "POST" }),
-  mine: () => api<any[]>("/deposits/me"),
 };
 
 export const Orders = {
@@ -127,8 +101,6 @@ export const Admin = {
   awaiting: () => api<{ orders: any[]; deposits: any[] }>("/admin/awaiting"),
   history: (limit = 50, offset = 0) =>
     api<{ orders: any[]; deposits: any[] }>(`/admin/history?limit=${limit}&offset=${offset}`),
-  confirmDeposit: (id: string) => api(`/admin/deposits/${id}/confirm`, { method: "POST" }),
-  cancelDeposit: (id: string) => api(`/admin/deposits/${id}/cancel`, { method: "POST" }),
   confirmOrder: (id: string, payload: { photo?: File; text?: string }) => {
     const fd = new FormData();
     if (payload.photo) fd.append("photo", payload.photo);
@@ -136,6 +108,10 @@ export const Admin = {
     return api(`/admin/orders/${id}/confirm`, { method: "POST", body: fd });
   },
   cancelOrder: (id: string) => api(`/admin/orders/${id}/cancel`, { method: "POST" }),
+  patchOrder: (id: string, payload: { totalUSD?: number; items?: any[]; deliveryAddress?: string }) =>
+    api(`/admin/orders/${id}`, { method: "PATCH", body: payload }),
+  messageOrder: (id: string, text: string) =>
+    api(`/admin/orders/${id}/message`, { method: "POST", body: { text } }),
   createProduct: (data: any) => api("/admin/products", { method: "POST", body: data }),
   updateProduct: (id: string, data: any) => api(`/admin/products/${id}`, { method: "PUT", body: data }),
   deleteProduct: (id: string) => api(`/admin/products/${id}`, { method: "DELETE" }),

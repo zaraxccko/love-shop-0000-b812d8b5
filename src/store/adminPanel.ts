@@ -2,16 +2,13 @@ import { create } from "zustand";
 import { toast } from "sonner";
 import { Admin } from "@/lib/api";
 import { MOCK_ANALYTICS, type AnalyticsSnapshot } from "@/lib/analyticsMock";
-import type { Deposit, OrderRecord } from "@/store/account";
+import type { OrderRecord } from "@/store/account";
 
 type AdminOrderRecord = OrderRecord & { customerUsername?: string };
-type AdminDepositRecord = Deposit & { customerUsername?: string };
 
 interface AdminPanelState {
   awaitingOrders: AdminOrderRecord[];
-  awaitingDeposits: AdminDepositRecord[];
   historyOrders: AdminOrderRecord[];
-  historyDeposits: AdminDepositRecord[];
   analytics: AnalyticsSnapshot;
   loadingQueue: boolean;
   loadingAnalytics: boolean;
@@ -20,15 +17,13 @@ interface AdminPanelState {
   refreshAll: () => Promise<void>;
   confirmOrder: (id: string, payload: { photo?: string; text?: string }) => Promise<void>;
   cancelOrder: (id: string) => Promise<void>;
-  confirmDeposit: (id: string) => Promise<void>;
-  cancelDeposit: (id: string) => Promise<void>;
+  patchOrder: (id: string, payload: { totalUSD?: number; items?: any[]; deliveryAddress?: string }) => Promise<void>;
+  messageOrder: (id: string, text: string) => Promise<void>;
 }
 
 export const useAdminPanel = create<AdminPanelState>((set, get) => ({
   awaitingOrders: [],
-  awaitingDeposits: [],
   historyOrders: [],
-  historyDeposits: [],
   analytics: MOCK_ANALYTICS,
   loadingQueue: false,
   loadingAnalytics: false,
@@ -36,15 +31,13 @@ export const useAdminPanel = create<AdminPanelState>((set, get) => ({
   refreshQueue: async () => {
     set({ loadingQueue: true });
     try {
-      const [{ orders: awaitingOrders, deposits: awaitingDeposits }, { orders: historyOrders, deposits: historyDeposits }] = await Promise.all([
+      const [{ orders: awaiting }, { orders: history }] = await Promise.all([
         Admin.awaiting(),
         Admin.history(),
       ]);
       set({
-        awaitingOrders: normalizeOrders(awaitingOrders),
-        awaitingDeposits: normalizeDeposits(awaitingDeposits),
-        historyOrders: normalizeOrders(historyOrders),
-        historyDeposits: normalizeDeposits(historyDeposits),
+        awaitingOrders: normalizeOrders(awaiting),
+        historyOrders: normalizeOrders(history),
         loadingQueue: false,
       });
     } catch (error) {
@@ -93,33 +86,29 @@ export const useAdminPanel = create<AdminPanelState>((set, get) => ({
     }
   },
 
-  confirmDeposit: async (id) => {
+  patchOrder: async (id, payload) => {
     try {
-      await Admin.confirmDeposit(id);
-      await get().refreshAll();
+      await Admin.patchOrder(id, payload);
+      await get().refreshQueue();
     } catch (error) {
-      toast.error("Не удалось подтвердить пополнение");
+      toast.error("Не удалось изменить заказ");
       throw error;
     }
   },
 
-  cancelDeposit: async (id) => {
+  messageOrder: async (id, text) => {
     try {
-      await Admin.cancelDeposit(id);
-      await get().refreshAll();
+      await Admin.messageOrder(id, text);
+      toast.success("Сообщение отправлено");
     } catch (error) {
-      toast.error("Не удалось отменить пополнение");
+      toast.error("Не удалось отправить сообщение");
       throw error;
     }
   },
 }));
 
 function normalizeOrders(input: any[]): AdminOrderRecord[] {
-  return Array.isArray(input) ? input.map((item) => normalizeOrder(item)) : [];
-}
-
-function normalizeDeposits(input: any[]): AdminDepositRecord[] {
-  return Array.isArray(input) ? input.map((item) => normalizeDeposit(item)) : [];
+  return Array.isArray(input) ? input.map(normalizeOrder) : [];
 }
 
 function normalizeOrder(item: any): AdminOrderRecord {
@@ -131,16 +120,6 @@ function normalizeOrder(item: any): AdminOrderRecord {
     customerTgId: customer?.tgId ? Number(customer.tgId) : item?.customerTgId,
     customerUsername: customer?.username ?? item?.customerUsername,
   } as AdminOrderRecord;
-}
-
-function normalizeDeposit(item: any): AdminDepositRecord {
-  const customer = item?.customer;
-  return {
-    ...item,
-    customerName: customer?.name ?? item?.customerName,
-    customerTgId: customer?.tgId ? Number(customer.tgId) : item?.customerTgId,
-    customerUsername: customer?.username ?? item?.customerUsername,
-  } as AdminDepositRecord;
 }
 
 async function dataUrlToFile(dataUrl: string, filename: string): Promise<File> {

@@ -4,8 +4,8 @@ import { prisma } from "../db.js";
 import { requireAuth } from "../auth/middleware.js";
 import { notifyAdmins } from "../bot.js";
 
-// Очень терпимая схема: фронт может слать строку либо как { productId } либо как { product: {...} }.
-// Подарки могут не иметь priceUSD/variantId. Главное — валидное qty и хотя бы какой-то идентификатор товара.
+// Терпимая схема: фронт может слать строку либо как { productId } либо как { product: {...} }.
+// Подарки могут не иметь priceUSD/variantId. Главное — валидное qty и хоть какой-то идентификатор товара.
 const CartLineSchema = z
   .object({
     productId: z.string().optional(),
@@ -38,8 +38,8 @@ const CreateOrderSchema = z.object({
 export async function orderRoutes(app: FastifyInstance) {
   /**
    * POST /api/orders — оформить заказ.
-   * Атомарно: списываем баланс юзера и создаём заказ в статусе "awaiting".
-   * Защита от дублей: если последний заказ юзера создан < 5 сек назад с тем же total — возвращаем его.
+   * Без баланса: просто создаём запись со статусом "awaiting".
+   * Защита от дублей: если последний awaiting-заказ юзера создан < 5 сек назад с тем же total — возвращаем его.
    */
   app.post("/orders", { preHandler: requireAuth }, async (req, reply) => {
     const parsed = CreateOrderSchema.safeParse(req.body);
@@ -60,8 +60,6 @@ export async function orderRoutes(app: FastifyInstance) {
       priceUSD: item.priceUSD ?? 0,
     }));
 
-    // Защита от двойного клика: ищем недавний awaiting-заказ по userTgId+totalUSD за последние 5 сек.
-    // НЕ используем JSON-equality по items — оно может выкидывать ошибки и тормозить.
     const recentSame = await prisma.order.findFirst({
       where: {
         userTgId: req.user!.tgId,
@@ -77,9 +75,7 @@ export async function orderRoutes(app: FastifyInstance) {
     }
 
     const user = await prisma.user.findUnique({ where: { tgId: req.user!.tgId } });
-    if (!user) {
-      return reply.code(401).send({ error: "unauthorized" });
-    }
+    if (!user) return reply.code(401).send({ error: "unauthorized" });
 
     try {
       const order = await prisma.order.create({
@@ -95,9 +91,8 @@ export async function orderRoutes(app: FastifyInstance) {
         },
       });
 
-      // Уведомление админам — не блокирует ответ.
       try {
-        const who = user?.username ? `@${user.username}` : user?.firstName ?? `tg:${order.userTgId}`;
+        const who = user.username ? `@${user.username}` : user.firstName ?? `tg:${order.userTgId}`;
         const itemsCount = Array.isArray(order.items) ? (order.items as any[]).length : 0;
         const text =
           `🛒 <b>Новая заявка на заказ</b> #${order.id}\n` +
@@ -114,9 +109,6 @@ export async function orderRoutes(app: FastifyInstance) {
 
       return serialize(order);
     } catch (e: any) {
-      if (e?.message === "user_not_found") {
-        return reply.code(401).send({ error: "unauthorized" });
-      }
       req.log.error({ err: e, body: req.body }, "failed to create order");
       return reply.code(500).send({ error: "internal", message: String(e?.message ?? e) });
     }

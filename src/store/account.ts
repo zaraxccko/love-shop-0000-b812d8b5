@@ -1,22 +1,14 @@
 // ============================================================
-// 💼 Аккаунт юзера: баланс, депозиты, заказы — теперь через API.
+// 💼 Аккаунт юзера: только заказы (баланса и депозитов больше нет).
 // ============================================================
 import { create } from "zustand";
 import type { CartLine } from "@/types/shop";
-import { Deposits, Orders, Admin, Auth } from "@/lib/api";
+import { Orders, Admin, Auth } from "@/lib/api";
 import { toast } from "sonner";
-
-const isApiMisconfigured = (error: unknown) =>
-  typeof error === "object" &&
-  error !== null &&
-  "body" in error &&
-  typeof (error as { body?: unknown }).body === "object" &&
-  (error as { body?: { error?: string } }).body?.error === "api_misconfigured";
 
 export type CryptoCode = "BTC" | "TRX" | "SOL" | "TON" | "USDT";
 
-// Адреса дублируются на бэке (см. backend/src/routes/deposits.ts).
-// Здесь используются только для отображения на странице депозита.
+// Адреса для приёма крипты — отображаются в UI, должны совпадать с .env / реальными кошельками.
 export const CRYPTO_LIST: { code: CryptoCode; name: string; network: string; address: string }[] = [
   { code: "USDT", name: "Tether",  network: "TRC-20", address: "TRGD4qP5SThQ2kt11jaKfUW6pZf2TpaDHt" },
   { code: "TRX",  name: "Tron",    network: "TRC-20", address: "TRGD4qP5SThQ2kt11jaKfUW6pZf2TpaDHt" },
@@ -24,21 +16,6 @@ export const CRYPTO_LIST: { code: CryptoCode; name: string; network: string; add
   { code: "SOL",  name: "Solana",  network: "Solana",  address: "FDpmT2bW8Y685CtFcMWSBuJi7D6xtr2JrNiMFDQCpJVe" },
   { code: "TON",  name: "Toncoin", network: "TON",     address: "EQAaPP8_JvEXQAxXE2K1F8LoIuRYbDNYzWmvpgw0XRarsVvQ" },
 ];
-
-export type DepositStatus = "pending" | "awaiting" | "confirmed" | "cancelled";
-
-export interface Deposit {
-  id: string;
-  createdAt: string;
-  amountUSD: number;
-  crypto: CryptoCode;
-  address: string;
-  status: DepositStatus;
-  paidAt?: string;
-  confirmedAt?: string;
-  customerName?: string;
-  customerTgId?: number;
-}
 
 export type OrderHistoryStatus = "awaiting" | "paid" | "in_delivery" | "completed" | "cancelled";
 
@@ -60,156 +37,45 @@ export interface OrderRecord {
 }
 
 interface AccountState {
-  balanceUSD: number;
-  deposits: Deposit[];
   orders: OrderRecord[];
-
   hydrate: () => Promise<void>;
-
-  createDeposit: (
-    amountUSD: number,
-    crypto: CryptoCode,
-    customer?: { name?: string; tgId?: number }
-  ) => Promise<Deposit>;
-  markPaid: (id: string) => Promise<void>;
-  cancelDeposit: (id: string) => Promise<void>;
-
-  /** Админский подтвердить — оставлено для обратной совместимости с UI. */
-  confirmDeposit: (id: string) => Promise<void>;
-
   addOrder: (
     o: Omit<OrderRecord, "id" | "createdAt" | "status"> & { status?: OrderHistoryStatus }
   ) => Promise<OrderRecord>;
   confirmOrder: (id: string, payload: { photo?: string; text?: string }) => Promise<void>;
   cancelOrder: (id: string) => Promise<void>;
-
-  /** Списать с баланса — теперь только локальная проверка перед заказом. Реальное списание делает бэк. */
-  spend: (amountUSD: number) => boolean;
 }
 
 export const useAccount = create<AccountState>((set, get) => ({
-  balanceUSD: 0,
-  deposits: [],
   orders: [],
 
   hydrate: async () => {
     try {
-      const [me, deps, ords] = await Promise.all([
-        Auth.me().catch(() => null),
-        Deposits.mine().catch(() => []),
-        Orders.mine().catch(() => []),
-      ]);
-      set({
-        balanceUSD: me?.balanceUSD ?? 0,
-        deposits: Array.isArray(deps) ? (deps as Deposit[]) : [],
-        orders: Array.isArray(ords) ? (ords as OrderRecord[]) : [],
-      });
-    } catch {
-      // ignore
-    }
-  },
-
-  createDeposit: async (amountUSD, crypto) => {
-    try {
-      const dep = (await Deposits.create(amountUSD, crypto)) as Deposit;
-      set((s) => ({ deposits: [dep, ...s.deposits] }));
-      return dep;
-    } catch (e: any) {
-      // Не валим UX, если внешний платёжный шлюз недоступен —
-      // бэк всё равно создаёт pending-запись на статичный кошелёк.
-      const status = e?.status as number | undefined;
-      const code = e?.body?.error as string | undefined;
-      if (code === "api_misconfigured") {
-        toast.error("API не подключён: проверь backend и /api прокси");
-      } else if (status === 401) {
-        toast.error("Сессия истекла — перезайдите через Telegram");
-      } else if (code === "gateway_unavailable") {
-        toast.message("Платёжный шлюз недоступен — заявка создана как pending");
-      } else {
-        toast.error("Не удалось создать заявку на пополнение");
-      }
-      throw e;
-    }
-  },
-
-  markPaid: async (id) => {
-    try {
-      const updated = (await Deposits.markPaid(id)) as Deposit;
-      set((s) => ({ deposits: s.deposits.map((d) => (d.id === id ? updated : d)) }));
-    } catch (e) {
-      toast.error(isApiMisconfigured(e) ? "API не подключён: проверь backend и /api прокси" : "Не удалось отметить оплату");
-      throw e;
-    }
-  },
-
-  cancelDeposit: async (id) => {
-    try {
-      const updated = (await Deposits.cancel(id)) as Deposit;
-      set((s) => ({ deposits: s.deposits.map((d) => (d.id === id ? updated : d)) }));
-    } catch (e) {
-      toast.error(isApiMisconfigured(e) ? "API не подключён: проверь backend и /api прокси" : "Не удалось отменить заявку");
-      throw e;
-    }
-  },
-
-  confirmDeposit: async (id) => {
-    try {
-      await Admin.confirmDeposit(id);
-      await get().hydrate();
-    } catch (e) {
-      toast.error("Не удалось подтвердить пополнение");
-      throw e;
-    }
+      const ords = await Orders.mine().catch(() => []);
+      set({ orders: Array.isArray(ords) ? (ords as OrderRecord[]) : [] });
+    } catch { /* ignore */ }
   },
 
   addOrder: async (o) => {
-    // Оптимистично добавляем awaiting-заказ, чтобы UI моментально заблокировал карточку
-    // активного заказа (даже если сеть медленная). При ошибке — откатим.
-    const optimisticId = `tmp-${Date.now()}`;
-    const optimistic: OrderRecord = {
-      id: optimisticId,
-      createdAt: new Date().toISOString(),
+    const created = (await Orders.create({
       totalUSD: o.totalUSD,
-      items: o.items,
+      items: o.items.map((item: any) => ({
+        productId: item.product?.id,
+        productName: item.productName ?? item.product?.name,
+        qty: item.qty,
+        variantId: item.variantId,
+        districtSlug: item.districtSlug,
+        stashType: item.stashType,
+        priceUSD: item.priceUSD,
+        isGift: item.isGift,
+      })),
       delivery: o.delivery,
       deliveryAddress: o.deliveryAddress,
-      status: "awaiting",
-      customerName: o.customerName,
-      customerTgId: o.customerTgId,
       crypto: o.crypto,
       payAddress: o.payAddress,
-    };
-    set((s) => ({ orders: [optimistic, ...s.orders] }));
-    try {
-      const created = (await Orders.create({
-        totalUSD: o.totalUSD,
-        items: o.items.map((item: any) => ({
-          productId: item.product?.id,
-          productName: item.productName ?? item.product?.name,
-          qty: item.qty,
-          variantId: item.variantId,
-          districtSlug: item.districtSlug,
-          stashType: item.stashType,
-          priceUSD: item.priceUSD,
-          isGift: item.isGift,
-        })),
-        delivery: o.delivery,
-        deliveryAddress: o.deliveryAddress,
-        crypto: o.crypto,
-        payAddress: o.payAddress,
-      })) as OrderRecord;
-      set((s) => {
-        const withoutOptimistic = s.orders.filter((order) => order.id !== optimisticId && order.id !== created.id);
-        return { orders: [created, ...withoutOptimistic] };
-      });
-      Auth.me().then((me) => set({ balanceUSD: me.balanceUSD })).catch(() => {});
-      return created;
-    } catch (e) {
-      // откатываем оптимистичную запись
-      set((s) => ({ orders: s.orders.filter((order) => order.id !== optimisticId) }));
-      // Тост покажет вызывающий код (он различает insufficient_balance).
-      throw e;
-    }
+    })) as OrderRecord;
+    set((s) => ({ orders: [created, ...s.orders.filter((x) => x.id !== created.id)] }));
+    return created;
   },
 
   confirmOrder: async (id, payload) => {
@@ -235,8 +101,6 @@ export const useAccount = create<AccountState>((set, get) => ({
       throw e;
     }
   },
-
-  spend: (amountUSD) => get().balanceUSD >= amountUSD,
 }));
 
 async function dataUrlToFile(dataUrl: string, filename: string): Promise<File> {
