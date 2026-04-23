@@ -46,12 +46,8 @@ export const OrderPaymentPage = ({ onBack, onPaid }: OrderPaymentPageProps) => {
 
   const addOrder = useAccount((s) => s.addOrder);
   const hydrateAccount = useAccount((s) => s.hydrate);
+  const hasAwaitingOrder = useAccount((s) => s.orders.some((o) => o.status === "awaiting"));
   const { user } = useTelegram();
-
-  const awaitingOrder = useMemo(
-    () => useAccount.getState().orders.find((o) => o.status === "awaiting") ?? null,
-    []
-  );
 
   const [crypto, setCrypto] = useState<CryptoCode>("USDT");
   const [submitting, setSubmitting] = useState(false);
@@ -78,7 +74,7 @@ export const OrderPaymentPage = ({ onBack, onPaid }: OrderPaymentPageProps) => {
 
   const handlePaid = async () => {
     if (submitting) return;
-    if (awaitingOrder) {
+    if (hasAwaitingOrder) {
       clearCart();
       await hydrateAccount().catch(() => {});
       toast.success(tr("Ждём подтверждения", "Waiting for confirmation"));
