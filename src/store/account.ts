@@ -32,7 +32,6 @@ export interface OrderRecord {
   crypto?: CryptoCode;
   payAddress?: string;
   confirmPhoto?: string;
-  confirmPhotos?: string[];
   confirmText?: string;
   confirmedAt?: string;
 }
@@ -85,7 +84,7 @@ export const useAccount = create<AccountState>((set, get) => ({
       if (payload.photo?.startsWith("data:")) {
         file = await dataUrlToFile(payload.photo, "confirm.jpg");
       }
-      await Admin.confirmOrder(id, { photos: file ? [file] : undefined, text: payload.text });
+      await Admin.confirmOrder(id, { photo: file, text: payload.text });
       await get().hydrate();
     } catch (e) {
       toast.error("Не удалось подтвердить заказ");

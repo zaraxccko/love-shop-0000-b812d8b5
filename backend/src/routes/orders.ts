@@ -127,9 +127,6 @@ export async function orderRoutes(app: FastifyInstance) {
 }
 
 export function serialize(o: any) {
-  const photos: string[] = Array.isArray(o.confirmPhotoUrls) && o.confirmPhotoUrls.length
-    ? o.confirmPhotoUrls
-    : (o.confirmPhotoUrl ? [o.confirmPhotoUrl] : []);
   return {
     id: o.id,
     createdAt: o.createdAt.toISOString(),
@@ -140,8 +137,7 @@ export function serialize(o: any) {
     status: o.status,
     crypto: o.crypto ?? undefined,
     payAddress: o.payAddress ?? undefined,
-    confirmPhoto: photos[0],
-    confirmPhotos: photos,
+    confirmPhoto: o.confirmPhotoUrl ?? undefined,
     confirmText: o.confirmText ?? undefined,
     confirmedAt: o.confirmedAt?.toISOString(),
   };

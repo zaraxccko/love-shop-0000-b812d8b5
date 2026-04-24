@@ -18,8 +18,6 @@ export interface AnalyticsSnapshot {
     gmvUSD: number;
     ordersToday: number;
     avgCheckUSD: number;
-    purchasesCount: number;
-    purchasesUSD: number;
   };
   funnel: {
     starts: number;
@@ -54,8 +52,6 @@ export const MOCK_ANALYTICS: AnalyticsSnapshot = {
     gmvUSD: 0,
     ordersToday: 0,
     avgCheckUSD: 0,
-    purchasesCount: 0,
-    purchasesUSD: 0,
   },
   funnel: {
     starts: 0,
