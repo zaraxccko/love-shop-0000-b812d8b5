@@ -58,10 +58,31 @@ services:
       - "443:443"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - ./scripts/start-caddy.sh:/usr/local/bin/start-caddy.sh:ro
       - caddy_data:/data
       - caddy_config:/config
-    command: ["sh", "/usr/local/bin/start-caddy.sh"]
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        DOMAINS="${APP_DOMAINS:-}"
+        if [ -z "$$DOMAINS" ]; then
+          SRC="$${WEBAPP_URL:-$${VITE_API_URL:-}}"
+          if [ -n "$$SRC" ]; then
+            HOST=$$(printf '%s' "$$SRC" | sed -E 's#^[A-Za-z]+://##; s#/.*$$##; s#:.*$$##')
+            case "$$HOST" in
+              www.*) DOMAINS="$$HOST, $${HOST#www.}" ;;
+              "")    : ;;
+              *)     DOMAINS="$$HOST, www.$$HOST" ;;
+            esac
+          fi
+        fi
+        if [ -z "$$DOMAINS" ]; then
+          echo "[proxy] APP_DOMAINS empty and cannot derive from WEBAPP_URL/VITE_API_URL" >&2
+          exit 1
+        fi
+        export APP_DOMAINS="$$DOMAINS"
+        echo "[proxy] starting Caddy for: $$APP_DOMAINS"
+        exec caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
     depends_on:
       - frontend
       - api
