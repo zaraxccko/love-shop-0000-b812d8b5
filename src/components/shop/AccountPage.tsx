@@ -287,19 +287,18 @@ export const AccountPage = ({ onBack, onOpenCart, onOpenActiveOrder }: AccountPa
                             ? o.confirmPhotos
                             : (o.confirmPhoto ? [o.confirmPhoto] : []);
                           if (list.length === 0) return null;
-                          if (list.length === 1) {
-                            return (
-                              <a href={list[0]} target="_blank" rel="noreferrer" className="block">
-                                <img src={list[0]} alt="confirm" className="w-full max-h-64 object-cover rounded-lg" />
-                              </a>
-                            );
-                          }
                           return (
-                            <div className="grid grid-cols-2 gap-1.5">
+                            <div className="flex flex-wrap gap-1.5">
                               {list.map((src, i) => (
-                                <a key={i} href={src} target="_blank" rel="noreferrer" className="block">
-                                  <img src={src} alt={`confirm-${i}`} className="w-full h-32 object-cover rounded-lg" />
-                                </a>
+                                <button
+                                  key={i}
+                                  type="button"
+                                  onClick={() => { haptic("light"); setLightbox({ list, index: i }); }}
+                                  className="relative w-16 h-16 rounded-lg overflow-hidden bg-muted active:scale-95 transition-transform"
+                                  aria-label={`Photo ${i + 1}`}
+                                >
+                                  <img src={src} alt={`confirm-${i}`} className="w-full h-full object-cover" />
+                                </button>
                               ))}
                             </div>
                           );
