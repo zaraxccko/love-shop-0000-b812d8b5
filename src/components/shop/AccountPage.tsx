@@ -61,14 +61,11 @@ export const AccountPage = ({ onBack, onOpenCart, onOpenActiveOrder }: AccountPa
     };
   }, [hydrate]);
 
-  // ── Активный/подтверждённый заказ ─────────────────────────────
-  const activeOrder =
-    orders.find((o) => o.status === "awaiting") ??
-    orders.find((o) => (o.status === "completed" || o.status === "paid" || o.status === "in_delivery") && (o.confirmPhoto || o.confirmText)) ??
-    null;
-  const awaitingOrder = activeOrder?.status === "awaiting" ? activeOrder : null;
-  const confirmedOrder = activeOrder && activeOrder.status !== "awaiting" ? activeOrder : null;
-  const allHistory = orders.filter((o) => o.id !== confirmedOrder?.id);
+  // ── Активный заказ ─────────────────────────────────────────────
+  // Активным считаем ТОЛЬКО awaiting (ждёт подтверждения от магазина).
+  // Подтверждённые/отменённые сразу уезжают в историю — пользователь может оформить новый.
+  const awaitingOrder = orders.find((o) => o.status === "awaiting") ?? null;
+  const allHistory = orders.filter((o) => o.status !== "awaiting");
 
   // ── Фильтр истории ────────────────────────────────────────────
   const [filter, setFilter] = useState<HistoryFilter>("all");
@@ -168,7 +165,7 @@ export const AccountPage = ({ onBack, onOpenCart, onOpenActiveOrder }: AccountPa
             <div className="font-display font-bold text-lg flex items-center gap-2">
               <ShoppingBag className="w-4 h-4" /> {tr("Активный заказ", "Active order")}
             </div>
-            {cartLines.length > 0 && !awaitingOrder && !confirmedOrder && (
+            {cartLines.length > 0 && !awaitingOrder && (
               <button onClick={onOpenActiveOrder} className="text-xs font-bold text-primary">
                 {tr("Открыть", "Open")}
               </button>
@@ -183,29 +180,6 @@ export const AccountPage = ({ onBack, onOpenCart, onOpenActiveOrder }: AccountPa
                 </span>
               </div>
               <div className="font-display font-bold text-xl">{formatTHB(awaitingOrder.totalUSD)}</div>
-            </div>
-          ) : confirmedOrder ? (
-            <div className="w-full rounded-2xl bg-card shadow-card p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="text-[11px] font-mono font-bold text-muted-foreground">#{confirmedOrder.id}</div>
-                <span className="text-[11px] font-bold rounded-full px-2.5 py-1 bg-emerald-500/15 text-emerald-600">
-                  {tr("Оплата подтверждена", "Payment confirmed")}
-                </span>
-              </div>
-              <div className="font-display font-bold text-xl">{formatTHB(confirmedOrder.totalUSD)}</div>
-              <div className="rounded-xl bg-primary/5 border border-primary/20 p-3 space-y-2">
-                <div className="text-[10px] font-bold uppercase tracking-wide text-primary">
-                  {tr("Данные от магазина", "Details from shop")}
-                </div>
-                {confirmedOrder.confirmPhoto && (
-                  <a href={confirmedOrder.confirmPhoto} target="_blank" rel="noreferrer" className="block">
-                    <img src={confirmedOrder.confirmPhoto} alt="confirm" className="w-full max-h-72 object-cover rounded-lg" />
-                  </a>
-                )}
-                {confirmedOrder.confirmText && (
-                  <div className="text-sm text-foreground/90 whitespace-pre-wrap">{confirmedOrder.confirmText}</div>
-                )}
-              </div>
             </div>
           ) : cartLines.length === 0 ? (
             <div className="rounded-2xl bg-card shadow-card p-4 text-sm text-muted-foreground text-center">
@@ -285,16 +259,33 @@ export const AccountPage = ({ onBack, onOpenCart, onOpenActiveOrder }: AccountPa
                         🚚 {tr("Доставка", "Delivery")}{o.deliveryAddress ? ` · ${o.deliveryAddress}` : ""}
                       </div>
                     )}
-                    {(o.confirmPhoto || o.confirmText) && (
+                    {((o.confirmPhotos && o.confirmPhotos.length > 0) || o.confirmPhoto || o.confirmText) && (
                       <div className="mt-2 rounded-xl bg-primary/5 border border-primary/20 p-2.5 space-y-2">
                         <div className="text-[10px] font-bold uppercase tracking-wide text-primary">
                           {tr("Сообщение от магазина", "Message from shop")}
                         </div>
-                        {o.confirmPhoto && (
-                          <a href={o.confirmPhoto} target="_blank" rel="noreferrer" className="block">
-                            <img src={o.confirmPhoto} alt="confirm" className="w-full max-h-64 object-cover rounded-lg" />
-                          </a>
-                        )}
+                        {(() => {
+                          const list = o.confirmPhotos && o.confirmPhotos.length > 0
+                            ? o.confirmPhotos
+                            : (o.confirmPhoto ? [o.confirmPhoto] : []);
+                          if (list.length === 0) return null;
+                          if (list.length === 1) {
+                            return (
+                              <a href={list[0]} target="_blank" rel="noreferrer" className="block">
+                                <img src={list[0]} alt="confirm" className="w-full max-h-64 object-cover rounded-lg" />
+                              </a>
+                            );
+                          }
+                          return (
+                            <div className="grid grid-cols-2 gap-1.5">
+                              {list.map((src, i) => (
+                                <a key={i} href={src} target="_blank" rel="noreferrer" className="block">
+                                  <img src={src} alt={`confirm-${i}`} className="w-full h-32 object-cover rounded-lg" />
+                                </a>
+                              ))}
+                            </div>
+                          );
+                        })()}
                         {o.confirmText && (
                           <div className="text-xs text-foreground/90 whitespace-pre-wrap">{o.confirmText}</div>
                         )}
