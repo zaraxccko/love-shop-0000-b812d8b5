@@ -6,9 +6,6 @@ import {
   ShoppingBag,
   Clock,
   Repeat,
-  X,
-  ChevronLeft,
-  ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAccount, type OrderRecord } from "@/store/account";
@@ -47,19 +44,6 @@ export const AccountPage = ({ onBack, onOpenCart, onOpenActiveOrder }: AccountPa
   const reservedAt = useCart((s) => s.reservedAt);
   const clearCart = useCart((s) => s.clear);
   const addToCart = useCart((s) => s.add);
-
-  // Лайтбокс для просмотра фото-подтверждений внутри WebApp
-  const [lightbox, setLightbox] = useState<{ images: string[]; index: number } | null>(null);
-  useEffect(() => {
-    if (!lightbox) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setLightbox(null);
-      if (e.key === "ArrowRight") setLightbox((l) => l ? { ...l, index: (l.index + 1) % l.images.length } : l);
-      if (e.key === "ArrowLeft") setLightbox((l) => l ? { ...l, index: (l.index - 1 + l.images.length) % l.images.length } : l);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [lightbox]);
 
   const tr = (ru: string, en: string) => (lang === "ru" ? ru : en);
 
@@ -285,18 +269,19 @@ export const AccountPage = ({ onBack, onOpenCart, onOpenActiveOrder }: AccountPa
                             ? o.confirmPhotos
                             : (o.confirmPhoto ? [o.confirmPhoto] : []);
                           if (list.length === 0) return null;
+                          if (list.length === 1) {
+                            return (
+                              <a href={list[0]} target="_blank" rel="noreferrer" className="block">
+                                <img src={list[0]} alt="confirm" className="w-full max-h-64 object-cover rounded-lg" />
+                              </a>
+                            );
+                          }
                           return (
-                            <div className="flex flex-wrap gap-1.5">
+                            <div className="grid grid-cols-2 gap-1.5">
                               {list.map((src, i) => (
-                                <button
-                                  key={i}
-                                  type="button"
-                                  onClick={() => { haptic("light"); setLightbox({ images: list, index: i }); }}
-                                  className="relative w-14 h-14 rounded-lg overflow-hidden border border-primary/30 bg-muted active:scale-95 transition-transform"
-                                  aria-label={tr("Открыть фото", "Open photo")}
-                                >
-                                  <img src={src} alt={`confirm-${i}`} className="w-full h-full object-cover" />
-                                </button>
+                                <a key={i} href={src} target="_blank" rel="noreferrer" className="block">
+                                  <img src={src} alt={`confirm-${i}`} className="w-full h-32 object-cover rounded-lg" />
+                                </a>
                               ))}
                             </div>
                           );
@@ -322,61 +307,6 @@ export const AccountPage = ({ onBack, onOpenCart, onOpenActiveOrder }: AccountPa
         </section>
 
       </main>
-
-      {lightbox && (
-        <div
-          className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center"
-          onClick={() => setLightbox(null)}
-        >
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); setLightbox(null); }}
-            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 backdrop-blur flex items-center justify-center text-white active:scale-95"
-            aria-label="Close"
-          >
-            <X className="w-5 h-5" />
-          </button>
-
-          {lightbox.images.length > 1 && (
-            <>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  haptic("light");
-                  setLightbox((l) => l ? { ...l, index: (l.index - 1 + l.images.length) % l.images.length } : l);
-                }}
-                className="absolute left-3 w-10 h-10 rounded-full bg-white/10 backdrop-blur flex items-center justify-center text-white active:scale-95"
-                aria-label="Previous"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  haptic("light");
-                  setLightbox((l) => l ? { ...l, index: (l.index + 1) % l.images.length } : l);
-                }}
-                className="absolute right-3 w-10 h-10 rounded-full bg-white/10 backdrop-blur flex items-center justify-center text-white active:scale-95"
-                aria-label="Next"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-white/10 backdrop-blur text-white text-xs font-medium">
-                {lightbox.index + 1} / {lightbox.images.length}
-              </div>
-            </>
-          )}
-
-          <img
-            src={lightbox.images[lightbox.index]}
-            alt={`photo-${lightbox.index}`}
-            onClick={(e) => e.stopPropagation()}
-            className="max-w-[92vw] max-h-[85vh] object-contain rounded-lg"
-          />
-        </div>
-      )}
     </div>
   );
 };
