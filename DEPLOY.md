@@ -18,6 +18,7 @@ cp backend/.env.example backend/.env
 Открой и отредактируй:
 
 **`.env` (root)** — для фронта и прокси:
+- `APP_DOMAINS=prxvt.ink, www.prxvt.ink`
 - `VITE_API_URL=https://prxvt.ink/api`
 - `VITE_ADMIN_IDS=твой_telegram_id`
 - `POSTGRES_PASSWORD=сильный_пароль`
