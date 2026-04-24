@@ -72,6 +72,7 @@ export const AccountPage = ({ onBack, onOpenCart, onOpenActiveOrder }: AccountPa
 
   // ── Фильтр истории ────────────────────────────────────────────
   const [filter, setFilter] = useState<HistoryFilter>("all");
+  const [lightbox, setLightbox] = useState<{ list: string[]; index: number } | null>(null);
   const historyOrders = useMemo(() => {
     if (filter === "all") return allHistory;
     if (filter === "confirmed")
