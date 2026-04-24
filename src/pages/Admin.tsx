@@ -1226,7 +1226,7 @@ const DepositsTab = ({ standalone = false }: { standalone?: boolean }) => {
 
                   <div className="flex gap-2">
                     <button
-                      onClick={() => { setConfirmTarget(o); setPhoto(""); setText(""); }}
+                      onClick={() => { setConfirmTarget(o); setPhotos([]); setText(""); }}
                       className="flex-1 gradient-primary text-primary-foreground font-bold py-2 px-2 rounded-xl flex items-center justify-center gap-1.5 active:scale-95"
                     >
                       <Check className="w-4 h-4 shrink-0" /> <span>Подтвердить</span>
@@ -1310,26 +1310,36 @@ const DepositsTab = ({ standalone = false }: { standalone?: boolean }) => {
                 <Label className="text-xs">
                   {confirmTarget.delivery ? "Фото для клиента (опционально)" : "Фото закладки"}
                 </Label>
-                <div className="mt-1.5 rounded-xl border border-dashed border-border p-3">
-                  {photo ? (
-                    <div className="space-y-2">
-                      <img src={photo} alt="preview" className="w-full max-h-64 object-contain rounded-lg" />
-                      <button
-                        onClick={() => setPhoto("")}
-                        className="text-xs text-destructive font-bold"
-                      >
-                        Убрать фото
-                      </button>
+                <div className="mt-1.5 rounded-xl border border-dashed border-border p-3 space-y-2">
+                  {photos.length > 0 && (
+                    <div className="grid grid-cols-3 gap-2">
+                      {photos.map((p, idx) => (
+                        <div key={idx} className="relative group">
+                          <img src={p} alt={`preview-${idx}`} className="w-full h-24 object-cover rounded-lg" />
+                          <button
+                            type="button"
+                            onClick={() => setPhotos((prev) => prev.filter((_, i) => i !== idx))}
+                            className="absolute top-1 right-1 w-6 h-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center text-xs shadow-card"
+                            aria-label="remove"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
                     </div>
-                  ) : (
-                    <label className="flex flex-col items-center justify-center gap-1 py-4 cursor-pointer text-muted-foreground hover:text-foreground transition-colors">
+                  )}
+                  {photos.length < 10 && (
+                    <label className="flex flex-col items-center justify-center gap-1 py-3 cursor-pointer text-muted-foreground hover:text-foreground transition-colors">
                       <ImageIcon className="w-6 h-6" />
-                      <span className="text-xs">Загрузить фото</span>
+                      <span className="text-xs">
+                        {photos.length === 0 ? "Загрузить фото (до 10)" : `Добавить ещё (${photos.length}/10)`}
+                      </span>
                       <input
                         type="file"
                         accept="image/*"
+                        multiple
                         className="hidden"
-                        onChange={(e) => onPhoto(e.target.files?.[0])}
+                        onChange={(e) => { onPhoto(e.target.files); e.target.value = ""; }}
                       />
                     </label>
                   )}
