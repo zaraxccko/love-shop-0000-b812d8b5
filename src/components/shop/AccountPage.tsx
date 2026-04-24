@@ -6,6 +6,9 @@ import {
   ShoppingBag,
   Clock,
   Repeat,
+  X,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAccount, type OrderRecord } from "@/store/account";
@@ -69,6 +72,7 @@ export const AccountPage = ({ onBack, onOpenCart, onOpenActiveOrder }: AccountPa
 
   // ── Фильтр истории ────────────────────────────────────────────
   const [filter, setFilter] = useState<HistoryFilter>("all");
+  const [lightbox, setLightbox] = useState<{ list: string[]; index: number } | null>(null);
   const historyOrders = useMemo(() => {
     if (filter === "all") return allHistory;
     if (filter === "confirmed")
@@ -91,6 +95,20 @@ export const AccountPage = ({ onBack, onOpenCart, onOpenActiveOrder }: AccountPa
 
   const mm = String(Math.floor(msLeft / 60000)).padStart(2, "0");
   const ss = String(Math.floor((msLeft % 60000) / 1000)).padStart(2, "0");
+
+  // ── Лайтбокс: клавиатура ──────────────────────────────────────
+  useEffect(() => {
+    if (!lightbox) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLightbox(null);
+      if (e.key === "ArrowRight") setLightbox((lb) => lb ? { ...lb, index: (lb.index + 1) % lb.list.length } : lb);
+      if (e.key === "ArrowLeft")  setLightbox((lb) => lb ? { ...lb, index: (lb.index - 1 + lb.list.length) % lb.list.length } : lb);
+    };
+    window.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = prev; };
+  }, [lightbox]);
 
   const fmtDate = (iso: string) =>
     new Date(iso).toLocaleString(lang === "ru" ? "ru-RU" : "en-US", {
@@ -269,19 +287,18 @@ export const AccountPage = ({ onBack, onOpenCart, onOpenActiveOrder }: AccountPa
                             ? o.confirmPhotos
                             : (o.confirmPhoto ? [o.confirmPhoto] : []);
                           if (list.length === 0) return null;
-                          if (list.length === 1) {
-                            return (
-                              <a href={list[0]} target="_blank" rel="noreferrer" className="block">
-                                <img src={list[0]} alt="confirm" className="w-full max-h-64 object-cover rounded-lg" />
-                              </a>
-                            );
-                          }
                           return (
-                            <div className="grid grid-cols-2 gap-1.5">
+                            <div className="flex flex-wrap gap-1.5">
                               {list.map((src, i) => (
-                                <a key={i} href={src} target="_blank" rel="noreferrer" className="block">
-                                  <img src={src} alt={`confirm-${i}`} className="w-full h-32 object-cover rounded-lg" />
-                                </a>
+                                <button
+                                  key={i}
+                                  type="button"
+                                  onClick={() => { haptic("light"); setLightbox({ list, index: i }); }}
+                                  className="relative w-16 h-16 rounded-lg overflow-hidden bg-muted active:scale-95 transition-transform"
+                                  aria-label={`Photo ${i + 1}`}
+                                >
+                                  <img src={src} alt={`confirm-${i}`} className="w-full h-full object-cover" />
+                                </button>
                               ))}
                             </div>
                           );
@@ -307,6 +324,59 @@ export const AccountPage = ({ onBack, onOpenCart, onOpenActiveOrder }: AccountPa
         </section>
 
       </main>
+
+      {lightbox && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center animate-in fade-in"
+          onClick={() => setLightbox(null)}
+        >
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setLightbox(null); }}
+            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center active:scale-95"
+            aria-label="Close"
+          >
+            <X className="w-5 h-5" />
+          </button>
+
+          {lightbox.list.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setLightbox((lb) => lb ? { ...lb, index: (lb.index - 1 + lb.list.length) % lb.list.length } : lb);
+                }}
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center active:scale-95"
+                aria-label="Prev"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setLightbox((lb) => lb ? { ...lb, index: (lb.index + 1) % lb.list.length } : lb);
+                }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center active:scale-95"
+                aria-label="Next"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+              <div className="absolute bottom-5 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-white/10 text-white text-xs font-bold">
+                {lightbox.index + 1} / {lightbox.list.length}
+              </div>
+            </>
+          )}
+
+          <img
+            src={lightbox.list[lightbox.index]}
+            alt="Full size"
+            onClick={(e) => e.stopPropagation()}
+            className="max-w-[92vw] max-h-[85vh] object-contain rounded-lg"
+          />
+        </div>
+      )}
     </div>
   );
 };
