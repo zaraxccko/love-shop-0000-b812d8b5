@@ -1090,9 +1090,11 @@ const DepositsTab = ({ standalone = false }: { standalone?: boolean }) => {
   /** Объединяем одинаковые позиции (товар+вариант+район+закладка+isGift) в одну строку. */
   const mergeItems = (items: OrderRecord["items"]) => {
     const map = new Map<string, (typeof items)[number]>();
-    for (const l of items) {
+    for (const l of items ?? []) {
+      if (!l) continue;
       const isGift = (l as { isGift?: boolean }).isGift === true;
-      const key = `${l.product.id}::${l.variantId ?? ""}::${l.districtSlug ?? ""}::${l.stashType ?? ""}::${isGift ? "g" : ""}`;
+      const productId = (l as any).product?.id ?? (l as any).productId ?? "";
+      const key = `${productId}::${l.variantId ?? ""}::${l.districtSlug ?? ""}::${l.stashType ?? ""}::${isGift ? "g" : ""}`;
       const existing = map.get(key);
       if (existing) {
         map.set(key, { ...existing, qty: existing.qty + l.qty });
@@ -1130,7 +1132,8 @@ const DepositsTab = ({ standalone = false }: { standalone?: boolean }) => {
         ) : (
           <div className="space-y-3">
             {awaitingOrders.map((o) => {
-              const realItems = mergeItems(o.items.filter((l) => (l as { isGift?: boolean }).isGift !== true));
+              const safeItems = Array.isArray(o.items) ? o.items : [];
+              const realItems = mergeItems(safeItems.filter((l) => l && (l as { isGift?: boolean }).isGift !== true));
               return (
                 <div key={o.id} className="bg-card rounded-2xl p-3 shadow-card space-y-2">
                   <div className="flex items-start justify-between gap-2">
@@ -1150,6 +1153,9 @@ const DepositsTab = ({ standalone = false }: { standalone?: boolean }) => {
                   {/* Состав заказа */}
                   <div className="space-y-1.5 bg-background rounded-xl p-2.5">
                     {realItems.map((l, idx) => {
+                      const product = (l as any).product ?? {};
+                      const productName = product.name ?? (l as any).productName ?? "—";
+                      const productEmoji = product.emoji ?? "📦";
                       const districtName = l.districtSlug
                         ? findDistrict(l.districtSlug)?.name.ru ?? l.districtSlug
                         : null;
@@ -1160,7 +1166,7 @@ const DepositsTab = ({ standalone = false }: { standalone?: boolean }) => {
                         <div key={idx} className="text-xs">
                           <div className="font-semibold flex items-center justify-between gap-2">
                             <span className="truncate">
-                              {l.product.emoji} {loc(l.product.name, "ru")}
+                              {productEmoji} {loc(productName, "ru")}
                               {l.variantId && (
                                 <span className="text-muted-foreground font-normal"> · {l.variantId}</span>
                               )}
