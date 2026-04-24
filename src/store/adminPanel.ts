@@ -15,7 +15,7 @@ interface AdminPanelState {
   refreshQueue: () => Promise<void>;
   refreshAnalytics: () => Promise<void>;
   refreshAll: () => Promise<void>;
-  confirmOrder: (id: string, payload: { photo?: string; text?: string }) => Promise<void>;
+  confirmOrder: (id: string, payload: { photos?: string[]; text?: string }) => Promise<void>;
   cancelOrder: (id: string) => Promise<void>;
   patchOrder: (id: string, payload: { totalUSD?: number; items?: any[]; deliveryAddress?: string }) => Promise<void>;
   messageOrder: (id: string, text: string) => Promise<void>;
